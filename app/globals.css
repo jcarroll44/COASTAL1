@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Brand (Royal Blue) */
+:root {
+  --brand: #0170bf;
+}
+.bg-brand {
+  background-color: var(--brand) !important;
+}
+.text-brand {
+  color: var(--brand) !important;
+}
+.border-brand {
+  border-color: var(--brand) !important;
+}
+
+/* Container + polish */
+.coastal-container {
+  @apply max-w-[1280px] w-[92%] mx-auto;
+}
+.coastal-glass {
+  @apply bg-white/80 backdrop-blur-md border border-white/60 shadow-[0_6px_24px_rgba(0,0,0,0.08)];
+}
+.coastal-lift {
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s;
+}
+.coastal-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(2, 57, 115, 0.06);
+}
+
+/* ===== Mobile drawer to match reference ===== */
+.mobile-drawer {
+  width: 300px;
+} /* tidy width like the screenshot */
+
+.mobile-drawer-title {
+  @apply px-4 pt-4 pb-3 text-[11px] uppercase tracking-[0.14em] text-slate-500;
+}
+
+/* Each row (NO 'group' in @apply) */
+.mobile-nav-link {
+  @apply flex items-center justify-between px-4 py-3
+         border-b border-slate-200 text-[15px] font-medium
+         text-slate-700 transition-colors;
+}
+.mobile-nav-link:hover {
+  @apply bg-slate-50;
+  color: var(--brand);
+}
+
+/* Right chevron */
+.mobile-nav-chev {
+  @apply text-slate-300;
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.mobile-nav-link:hover .mobile-nav-chev {
+  color: var(--brand);
+  transform: translateX(2px);
+}
+
+/* Bottom buttons area */
+.mobile-drawer-bottom {
+  @apply p-4 border-t border-slate-200 space-y-3;
+}
+.mobile-nav-phone {
+  @apply block w-full border border-slate-300 rounded px-3 py-2 text-center text-sm font-medium text-slate-700;
+}
+.mobile-nav-cta {
+  @apply block w-full bg-brand text-white px-4 py-2 rounded text-center font-semibold;
+}

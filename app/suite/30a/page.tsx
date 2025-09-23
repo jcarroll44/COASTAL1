@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Search30A from "../../components/Search30A";
+import Search30A from "../../components/Search30a";
 import MapMini from "../../components/MapMini";
 
 type Property = {
@@ -13,7 +13,7 @@ type Property = {
   market?: "30a" | "pcb";
 };
 
-export default function AmenitySuite30A() {
+export default function AmenitySuite() {
   // ── State ────────────────────────────────────────────────────────────────────
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null

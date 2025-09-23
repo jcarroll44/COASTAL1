@@ -1,18 +1,12 @@
+// app/components/MapMini.tsx
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
-type Property = {
-  name: string;
-  address?: string;
-  lat?: number;
-  lng?: number;
-};
+type Property = { name: string; address?: string; lat?: number; lng?: number };
 
-// Tiny access list so routing works immediately.
-// Replace/extend with your full 30A accesses later.
 const ACCESS_POINTS: { label: string; coords: [number, number] }[] = [
   { label: "Walton Dunes Beach Access", coords: [-86.0880946, 30.3040649] },
   { label: "Ed Walline Regional Access", coords: [-86.23933, 30.32946] },
@@ -58,7 +52,6 @@ export default function MapMini({ property }: { property: Property | null }) {
 
     mapboxgl.accessToken = token;
 
-    // clean old
     if (mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
@@ -75,7 +68,6 @@ export default function MapMini({ property }: { property: Property | null }) {
     mapRef.current = map;
 
     map.on("load", async () => {
-      // markers
       new mapboxgl.Marker({ color: "#0EA5E9" })
         .setLngLat([property!.lng!, property!.lat!])
         .setPopup(new mapboxgl.Popup({ offset: 18 }).setText(property!.name))
@@ -87,12 +79,10 @@ export default function MapMini({ property }: { property: Property | null }) {
           .setPopup(new mapboxgl.Popup({ offset: 18 }).setText(access.label))
           .addTo(map);
 
-        // fit
         const bounds = new mapboxgl.LngLatBounds();
         bounds.extend([property!.lng!, property!.lat!]).extend(access.coords);
         map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
 
-        // route
         try {
           const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${
             property!.lng
@@ -121,7 +111,6 @@ export default function MapMini({ property }: { property: Property | null }) {
               "line-opacity": 0.9,
             },
           });
-
           map.addLayer({
             id: "route",
             type: "line",

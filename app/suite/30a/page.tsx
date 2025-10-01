@@ -1,8 +1,10 @@
+// app/suite/30a/page.tsx
 "use client";
 
 import { useMemo, useState } from "react";
-import Search30A from "../../components/Search30a";
-import MapMini from "../../components/MapMini";
+import Search30A from "@/components/Search30a";
+import AmenityMap30A from "@/components/AmenityMap30A";
+import accessesJson from "@/data/CoastalAccess.json";
 
 type Property = {
   name: string;
@@ -13,7 +15,26 @@ type Property = {
   market?: "30a" | "pcb";
 };
 
-export default function AmenitySuite() {
+type Access = { name: string; lat: number; lng: number; type?: string };
+
+// simple meters distance
+function haversineMeters(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number }
+) {
+  const R = 6371e3;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b.lat);
+  const s =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+export default function AmenitySuite30A() {
   // ── State ────────────────────────────────────────────────────────────────────
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
@@ -22,6 +43,9 @@ export default function AmenitySuite() {
   const [bonfireDay, setBonfireDay] = useState<string | null>(null);
   const [photoDay, setPhotoDay] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
+
+  // static access points (no fetch required)
+  const accesses = accessesJson as unknown as Access[];
 
   // ── Pricing ─────────────────────────────────────────────────────────────────
   const PRICES = {
@@ -37,29 +61,84 @@ export default function AmenitySuite() {
 
   const dayPills = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const propertyLabel = useMemo(() => {
-    if (!selectedProperty) return "Select your home to personalize your suite";
-    const { name, address, pm } = selectedProperty;
-    return `${name}${address ? ` — ${address}` : ""}${pm ? ` (${pm})` : ""}`;
-  }, [selectedProperty]);
+  // shape for map
+  const homeForMap =
+    selectedProperty?.lat != null && selectedProperty?.lng != null
+      ? {
+          name: selectedProperty.name,
+          address: selectedProperty.address ?? "",
+          lat: selectedProperty.lat!,
+          lng: selectedProperty.lng!,
+          pmCompany: selectedProperty.pm ?? null,
+        }
+      : null;
 
-  // ── UI ───────────────────────────────────────────────────────────────────────
+  // compute nearest access (when we have coords)
+  const nearestAccess = useMemo(() => {
+    if (!homeForMap) return null;
+    let best: { access: Access; dist: number } | null = null;
+    for (const a of accesses) {
+      const d = haversineMeters(
+        { lat: homeForMap.lat, lng: homeForMap.lng },
+        { lat: a.lat, lng: a.lng }
+      );
+      if (!best || d < best.dist) best = { access: a, dist: d };
+    }
+    return best?.access ?? null;
+  }, [homeForMap, accesses]);
+
+  // what to show as the big title in the combined card
+  const bigTitle = selectedProperty?.name || "30A Amenity Suite";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-sky-100">
       <main className="max-w-7xl mx-auto px-5 md:px-8 pb-20">
-        {/* Banner / context */}
+        {/* ───────────────── Combined Title + Search card ──────────────── */}
         <div className="rounded-3xl border border-sky-100 bg-white/80 backdrop-blur-xl shadow-[0_20px_50px_-30px_rgba(2,132,199,0.25)] mb-6">
-          <div className="p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h2 className="text-2xl md:text-3xl font-bold text-sky-900">
-              30A Amenity Suite
-            </h2>
-            <div className="text-sky-700 text-sm">{propertyLabel}</div>
-          </div>
-        </div>
+          <div className="p-6 md:p-7">
+            <div className="flex flex-col gap-4 md:gap-5">
+              {/* Title + context row */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <h1 className="text-2xl md:text-3xl font-bold text-sky-900">
+                  {bigTitle}
+                </h1>
 
-        {/* Property / PM autocomplete */}
-        <div className="rounded-2xl border border-sky-100 bg-white/80 backdrop-blur-xl shadow-[0_10px_30px_-20px_rgba(2,132,199,0.2)] p-4 mb-8">
-          <Search30A onSelect={setSelectedProperty} />
+                {/* When a home is selected show PM + nearest access */}
+                {selectedProperty ? (
+                  <div className="text-sm text-sky-700/90">
+                    {selectedProperty.address && (
+                      <span className="mr-3">{selectedProperty.address}</span>
+                    )}
+                    {selectedProperty.pm && (
+                      <span className="mr-3">
+                        PM:{" "}
+                        <span className="font-medium">
+                          {selectedProperty.pm}
+                        </span>
+                      </span>
+                    )}
+                    {nearestAccess && (
+                      <span>
+                        Closest access:{" "}
+                        <span className="font-medium">
+                          {nearestAccess.name}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-sky-700/70">
+                    Select your home to personalize your suite.
+                  </div>
+                )}
+              </div>
+
+              {/* Search input */}
+              <div className="relative z-40">
+                <Search30A onSelect={setSelectedProperty} />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Top row: Chairs + Map (left) / Itinerary (right) */}
@@ -106,10 +185,10 @@ export default function AmenitySuite() {
               </div>
             </div>
 
-            {/* Photo + Map */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-t border-sky-100">
+            {/* Photo + Map — now separated with gap + rings so they don’t touch */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-sky-100 p-4">
               {/* Photo */}
-              <div className="relative">
+              <div className="relative rounded-xl overflow-hidden ring-1 ring-slate-200">
                 <div className="absolute left-4 top-4 z-10 bg-white/85 backdrop-blur px-3 py-1 rounded-xl text-sky-700 text-sm font-medium shadow-sm">
                   Beach Chairs & Umbrellas
                 </div>
@@ -120,9 +199,9 @@ export default function AmenitySuite() {
                 />
               </div>
 
-              {/* Map */}
-              <div className="relative">
-                <MapMini property={selectedProperty} />
+              {/* Map (Mapbox) */}
+              <div className="relative rounded-xl overflow-hidden ring-1 ring-slate-200">
+                <AmenityMap30A home={homeForMap} accesses={accesses} />
               </div>
             </div>
           </div>
@@ -188,7 +267,7 @@ export default function AmenitySuite() {
           </aside>
         </section>
 
-        {/* Lower cards */}
+        {/* Lower cards (unchanged) */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Beach Better Box */}
           <div className="rounded-3xl border border-sky-100 bg-white/80 backdrop-blur-xl hover:shadow-[0_20px_50px_-30px_rgba(2,132,199,0.3)] transition overflow-hidden">

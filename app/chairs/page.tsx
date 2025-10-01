@@ -1,16 +1,24 @@
 // app/chairs/page.tsx
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { ItineraryProvider } from "@/components/Itinerary";
 import AlaCarteTemplate from "@/components/AlaCarteTemplate";
 
 export default function ChairsPage() {
+  const params = useSearchParams();
+
+  // read ?m= from the URL safely in a client component
+  const m = (params.get("m") || "").toLowerCase();
+  const market = (m === "pcb" ? "pcb" : "30a") as "30a" | "pcb";
+
   return (
     <ItineraryProvider>
       <AlaCarteTemplate
         title="Chairs & Umbrellas"
         tagline="Premium wooden sets, placed for you daily."
-        heroImage="/hero/chairs-hero.jpg" // swap to your best image
+        heroImage="/hero/chairs-hero.jpg"
+        defaultMarket={market}
         options={[
           {
             id: "chair-set",

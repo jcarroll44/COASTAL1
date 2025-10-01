@@ -4,13 +4,21 @@
 import { ItineraryProvider } from "@/components/Itinerary";
 import AlaCarteTemplate from "@/components/AlaCarteTemplate";
 
-export default function BonfiresPage() {
+// Accept market via ?m=30a or ?m=pcb (default 30a)
+export default function BonfiresPage({
+  searchParams,
+}: {
+  searchParams: { m?: string };
+}) {
+  const market = (searchParams?.m === "pcb" ? "pcb" : "30a") as "30a" | "pcb";
+
   return (
     <ItineraryProvider>
       <AlaCarteTemplate
         title="Beach Bonfires"
         tagline="Permits, setup, seating & s’mores—handled by our crew."
         heroImage="/hero/bonfire-hero.jpg"
+        defaultMarket={market}
         options={[
           {
             id: "standard",

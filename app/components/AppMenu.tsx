@@ -1,116 +1,129 @@
+// app/components/AppMenu.tsx
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
-export default function AppMenu() {
-  const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
+type Props = { open: boolean; onClose: () => void };
 
-  // ESC to close
+const NAV = [
+  { label: "30A / South Walton", href: "/30a" },
+  { label: "Panama City Beach", href: "/pcb" },
+  { label: "Coastal – Build Your Week", href: "/suite" },
+  { label: "Beach Cams", href: "/cams" },
+  { label: "Current Beach Conditions", href: "/conditions" },
+  { label: "About Us", href: "/about" },
+];
+
+export default function AppMenu({ open, onClose }: Props) {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, onClose]);
+
+  if (!open) return null;
 
   return (
-    <>
-      {/* Hamburger (tight bars), fixed top-left */}
-      <button
-        aria-label="Open menu"
-        onClick={() => setOpen(true)}
-        className="fixed left-4 top-4 z-[60] grid h-10 w-10 place-items-center rounded-xl bg-white shadow-md ring-1 ring-sky-200/80 hover:bg-white/90"
-      >
-        <div className="space-y-[3px]">
-          <span className="block h-[2px] w-5 bg-sky-900" />
-          <span className="block h-[2px] w-5 bg-sky-900" />
-          <span className="block h-[2px] w-5 bg-sky-900" />
-        </div>
-      </button>
+    <div
+      className="fixed inset-0 z-[100]"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/40" />
 
-      {/* Drawer */}
-      {open && (
-        <div className="fixed inset-0 z-[60]">
-          {/* Backdrop */}
+      <div
+        className="absolute left-0 top-0 h-full w-[320px] max-w-[85%] bg-white shadow-2xl flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-4 py-3 border-b flex items-center justify-between">
+          <span className="text-[11px] tracking-[0.18em] uppercase text-slate-500">
+            Menu
+          </span>
           <button
             aria-label="Close menu"
-            onClick={close}
-            className="absolute inset-0 bg-black/30"
-          />
-
-          {/* Panel */}
-          <aside
-            className="absolute left-0 top-0 flex h-full w-[340px] max-w-[85vw] flex-col bg-white shadow-2xl ring-1 ring-sky-200
-                       translate-x-0 transition-transform duration-300 will-change-transform"
+            onClick={onClose}
+            className="grid place-items-center h-9 w-9 rounded-md border border-slate-200 hover:bg-slate-50"
           >
-            {/* Header row */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-sky-100">
-              <div className="text-[12px] font-semibold tracking-wide text-sky-700">
-                MENU
-              </div>
-              <button
-                onClick={close}
-                aria-label="Close"
-                className="rounded p-1 text-sky-900 hover:bg-sky-50"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Links */}
-            <nav className="flex-1 overflow-y-auto">
-              {[
-                { href: "/30a", label: "30A / South Walton" },
-                { href: "/pcb", label: "Panama City Beach" },
-                { href: "/suite", label: "Coastal – Build Your Week" },
-                {
-                  href: "https://sowal.com/live-webcams",
-                  label: "Beach Cams",
-                  external: true,
-                },
-                {
-                  href: "https://www.swfd.org/",
-                  label: "Current Beach Conditions",
-                  external: true,
-                },
-                { href: "/about", label: "About Us" },
-              ].map((item, i) => (
-                <div
-                  key={item.label}
-                  className="border-b border-sky-100/80 last:border-0"
-                >
-                  {item.external ? (
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={close}
-                      className="block px-5 py-4 text-[16px] font-medium text-sky-900 hover:bg-sky-50"
-                    >
-                      {item.label}
-                    </a>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      onClick={close}
-                      className="block px-5 py-4 text-[16px] font-medium text-sky-900 hover:bg-sky-50"
-                    >
-                      {item.label}
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </nav>
-
-            {/* Footer pinned bottom */}
-            <div className="border-t border-sky-100 px-5 py-4 text-[12px] text-sky-700/75">
-              © {new Date().getFullYear()} Coastal Beach Company
-            </div>
-          </aside>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 6l12 12M18 6l-12 12"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
         </div>
-      )}
-    </>
+
+        {/* Links */}
+        <nav className="flex-1 overflow-y-auto py-2">
+          <ul className="px-2">
+            {NAV.map((item) => {
+              const active = pathname.startsWith(item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={[
+                      "group flex items-center justify-between rounded-xl px-3 py-3",
+                      "hover:bg-sky-50 transition-colors",
+                      active ? "bg-sky-50/70" : "",
+                    ].join(" ")}
+                    onClick={onClose}
+                  >
+                    <span
+                      className={[
+                        "text-[15px]",
+                        active
+                          ? "text-sky-900 font-semibold"
+                          : "text-slate-800",
+                      ].join(" ")}
+                    >
+                      {item.label}
+                    </span>
+                    <svg
+                      className="h-4 w-4 text-slate-400 group-hover:text-sky-500 transition-transform group-hover:translate-x-0.5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Bottom actions */}
+        <div className="border-t p-4 space-y-3">
+          <a
+            href="tel:8503121551"
+            className="w-full h-11 grid place-items-center rounded-xl border text-[15px] font-medium text-slate-800 hover:bg-slate-50"
+          >
+            850-312-1551
+          </a>
+          <Link
+            href="/suite"
+            onClick={onClose}
+            className="w-full h-11 grid place-items-center rounded-xl bg-sky-900 text-white text-[15px] font-semibold hover:bg-sky-950"
+          >
+            Build Your Week
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }

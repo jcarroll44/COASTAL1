@@ -1,11 +1,13 @@
+// app/layout.tsx
+import type { Metadata } from "next";
 import "./globals.css";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { Metadata } from "next";
-import SiteHeader from "@/components/SiteHeader";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Coastal Beach Company",
-  description: "Premium beach service on the Florida Panhandle.",
+  description: "Refined beach service on Florida’s Emerald Coast.",
 };
 
 export default function RootLayout({
@@ -15,15 +17,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-sky-50/40 text-slate-900">
-        <SiteHeader />
-        <main>{children}</main>
-        <footer className="mt-16 border-t border-sky-100">
-          <div className="mx-auto w-full max-w-6xl px-4 py-8 text-sm text-sky-700">
-            © {new Date().getFullYear()} Coastal Beach Company · Public Beaches
-            (30A) · PCB · Destin
-          </div>
-        </footer>
+      <body className="bg-sky-50 text-sky-900 antialiased">
+        <Header />
+        {children}
+        {/* GLOBAL FOOTER */}
+        <Footer />
       </body>
     </html>
   );

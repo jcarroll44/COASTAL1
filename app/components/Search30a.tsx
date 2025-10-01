@@ -2,17 +2,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import propsData from "@/data/properties.json";
-
-type Raw = {
-  id?: string;
-  name: string;
-  address?: string;
-  pm?: string;
-  market?: string;
-  lat?: number;
-  lng?: number;
-};
+import homesRaw from "@/data/30a-homes.json";
 
 type OutProp = {
   name: string;
@@ -22,6 +12,10 @@ type OutProp = {
   lng?: number;
   market?: "30a";
 };
+
+function norm(v: unknown) {
+  return typeof v === "string" ? v.trim() : v;
+}
 
 export default function Search30a({
   onSelect,
@@ -34,20 +28,38 @@ export default function Search30a({
   const [active, setActive] = useState(0);
 
   const list = useMemo(() => {
-    const raw = (propsData as Raw[]).filter(
-      (r) => (r.market || "").toLowerCase() === "30a"
-    );
-    return raw.map((r) => ({
-      id: (r.id || r.name).toLowerCase().replace(/\s+/g, "-"),
-      name: r.name,
-      address: r.address || "",
-      pm: r.pm,
-      lat: r.lat,
-      lng: r.lng,
-      key: `${(r.name || "").toLowerCase()} ${(r.address || "")
-        .toLowerCase()
-        .trim()}`,
-    }));
+    const rows = Array.isArray(homesRaw) ? homesRaw : [];
+
+    return rows
+      .map((r: any) => {
+        const name = norm(r["Home Name"]) as string;
+        const address = norm(r["Address"]) as string;
+        const pm = norm(r["PM Company"]) as string | undefined;
+
+        const lat =
+          typeof r.Lat === "number"
+            ? r.Lat
+            : typeof r.Lat === "string"
+            ? parseFloat(r.Lat)
+            : undefined;
+
+        const lng =
+          typeof r.Lng === "number"
+            ? r.Lng
+            : typeof r.Lng === "string"
+            ? parseFloat(r.Lng)
+            : undefined;
+
+        const id = (name || address)
+          .toString()
+          .toLowerCase()
+          .replace(/\s+/g, "-");
+
+        const key = `${name} ${address} ${pm ?? ""}`.toLowerCase();
+
+        return { id, name, address, pm, lat, lng, key };
+      })
+      .filter((r) => r.name);
   }, []);
 
   const results = useMemo(() => {
@@ -56,9 +68,10 @@ export default function Search30a({
     return list
       .map((r) => ({
         ...r,
-        score: r.key.indexOf(s) < 0 ? 1e9 : r.key.indexOf(s),
+        score:
+          r.key.indexOf(s) < 0 ? Number.POSITIVE_INFINITY : r.key.indexOf(s),
       }))
-      .filter((r) => r.score !== 1e9)
+      .filter((r) => Number.isFinite(r.score))
       .sort((a, b) => a.score - b.score)
       .slice(0, 25);
   }, [q, list]);
@@ -110,7 +123,7 @@ export default function Search30a({
         onKeyDown={onKeyDown}
       />
       {open && q.trim() && (
-        <div className="absolute z-50 mt-2 w-full max-h-80 overflow-auto rounded-xl border bg-white shadow-lg">
+        <div className="absolute z-[60] mt-2 w-full max-h-80 overflow-auto rounded-xl border bg-white shadow-lg">
           {results.length === 0 && (
             <div className="px-4 py-3 text-neutral-500">No matches.</div>
           )}
@@ -124,7 +137,9 @@ export default function Search30a({
               }`}
             >
               <div className="font-medium">{r.name}</div>
-              <div className="text-sm text-neutral-600">{r.address}</div>
+              <div className="text-sm text-neutral-600">
+                {r.address} {r.pm ? `• ${r.pm}` : ""}
+              </div>
             </button>
           ))}
         </div>

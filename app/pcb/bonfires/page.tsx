@@ -1,19 +1,34 @@
-import ProductLanding from "@/components/ProductLanding";
+import ServiceBookingPage, {
+  ServiceBookingConfig,
+} from "@/components/ServiceBookingPage";
 
-export default function PCBBonfiresPage() {
-  return (
-    <ProductLanding
-      title="PCB Beach Bonfires"
-      subtitle="Permitted setup with seating, s’mores, and cleanup."
-      hero="/cards/bonfire.jpg"
-      priceNote="From $500 — pick a night"
-      bullets={[
-        { text: "Permit, pit, and crew included" },
-        { text: "Family-friendly packages" },
-        { text: "Golden-hour start times available" },
-      ]}
-      ctaText="View Packages"
-      gallery={["/cards/bonfire.jpg"]}
-    />
-  );
+const config: ServiceBookingConfig = {
+  title: "PCB Beach Bonfires",
+  blurb: "Permits, setup, seating, and s’mores — handled by our crew.",
+  hero: "/cards/bonfire.jpg",
+  supportsDateRange: false, // single date
+  quantityLabel: "package",
+  packages: [
+    {
+      id: "std",
+      name: "Standard Bonfire (up to 10)",
+      price: 500,
+      details: "2 hours • sunset",
+    },
+    {
+      id: "sig",
+      name: "Signature Bonfire (up to 20)",
+      price: 800,
+      details: "Lounge seating • lanterns",
+    },
+  ],
+  extras: [
+    { id: "smores", name: "S’mores Kit", price: 40 },
+    { id: "guitar", name: "Acoustic Guitarist", price: 250 },
+  ],
+  scope: "pcb",
+};
+
+export default function Page() {
+  return <ServiceBookingPage config={config} />;
 }

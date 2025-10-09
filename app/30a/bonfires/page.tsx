@@ -1,37 +1,20 @@
-// app/bonfires/page.tsx
-"use client";
+import ProductLanding from "@/components/ProductLanding";
 
-import { ItineraryProvider } from "@/components/Itinerary";
-import AlaCarteTemplate from "@/components/AlaCarteTemplate";
+const HERO = "/cards/bonfire.jpg";
 
-export default function BonfiresPage() {
+export default function Page() {
   return (
-    <ItineraryProvider>
-      <AlaCarteTemplate
-        title="Beach Bonfires"
-        tagline="Permits, setup, seating & s’mores—handled by our crew."
-        heroImage="/hero/bonfire-hero.jpg"
-        options={[
-          {
-            id: "standard",
-            title: "Standard Bonfire (up to 10)",
-            image: "/cards/bonfire.jpg",
-            price: 500,
-            note: "2 hours • sunset",
-          },
-          {
-            id: "signature",
-            title: "Signature Bonfire (up to 20)",
-            image: "/cards/bonfire-signature.jpg",
-            price: 800,
-            note: "Lounge seating • lanterns",
-          },
-        ]}
-        addons={[
-          { id: "smores", title: "S’mores Kit", price: 40 },
-          { id: "acoustic", title: "Acoustic Guitarist", price: 250 },
-        ]}
-      />
-    </ItineraryProvider>
+    <ProductLanding
+      title="30A Beach Bonfires"
+      subtitle="Permits, setup, seating, and s’mores — handled by our crew."
+      hero={HERO}
+      priceNote="Starting at $500"
+      bullets={[
+        { text: "Permit included" },
+        { text: "Setup and takedown by Coastal crew" },
+        { text: "Seating, firepit, and cleanup included" },
+      ]}
+      ctaText="Reserve Bonfire"
+    />
   );
 }

@@ -9,7 +9,7 @@ import accessesJson from "@/data/CoastalAccess.json";
 type Property = {
   name: string;
   address?: string;
-  pm?: string;
+  pm?: string; // partner company (e.g., 30A Escapes)
   lat?: number;
   lng?: number;
   market?: "30a" | "pcb";
@@ -17,7 +17,7 @@ type Property = {
 
 type Access = { name: string; lat: number; lng: number; type?: string };
 
-// simple meters distance
+// Haversine in meters
 function haversineMeters(
   a: { lat: number; lng: number },
   b: { lat: number; lng: number }
@@ -44,7 +44,10 @@ export default function AmenitySuite30A() {
   const [photoDay, setPhotoDay] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
 
-  // static access points (no fetch required)
+  // NEW: date range for Beach Chair Service
+  const [startDate, setStartDate] = useState<string>(""); // yyyy-mm-dd
+  const [endDate, setEndDate] = useState<string>("");
+
   const accesses = accessesJson as unknown as Access[];
 
   // ── Pricing ─────────────────────────────────────────────────────────────────
@@ -61,7 +64,7 @@ export default function AmenitySuite30A() {
 
   const dayPills = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // shape for map
+  // Map shape
   const homeForMap =
     selectedProperty?.lat != null && selectedProperty?.lng != null
       ? {
@@ -73,7 +76,7 @@ export default function AmenitySuite30A() {
         }
       : null;
 
-  // compute nearest access (when we have coords)
+  // Nearest access
   const nearestAccess = useMemo(() => {
     if (!homeForMap) return null;
     let best: { access: Access; dist: number } | null = null;
@@ -87,62 +90,135 @@ export default function AmenitySuite30A() {
     return best?.access ?? null;
   }, [homeForMap, accesses]);
 
-  // what to show as the big title in the combined card
-  const bigTitle = selectedProperty?.name || "30A Amenity Suite";
+  const hasHome = Boolean(selectedProperty);
+  const endMin = startDate || undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-sky-100">
-      <main className="max-w-7xl mx-auto px-5 md:px-8 pb-20">
-        {/* ───────────────── Combined Title + Search card ──────────────── */}
-        <div className="rounded-3xl border border-sky-100 bg-white/80 backdrop-blur-xl shadow-[0_20px_50px_-30px_rgba(2,132,199,0.25)] mb-6">
-          <div className="p-6 md:p-7">
-            <div className="flex flex-col gap-4 md:gap-5">
-              {/* Title + context row */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <h1 className="text-2xl md:text-3xl font-bold text-sky-900">
-                  {bigTitle}
-                </h1>
+      {/* breathing room below site header */}
+      <main className="max-w-7xl mx-auto px-5 md:px-8 pb-20 pt-6 md:pt-10">
+        {/* ───────────────── Top: Search (before) OR Premium Header (after) ───────── */}
+        {hasHome ? (
+          <div className="rounded-3xl border border-sky-100 bg-white/85 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(2,132,199,0.30)] mb-8">
+            <div className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+                <div>
+                  {/* brand line */}
+                  <div className="text-[11px] tracking-[0.22em] uppercase text-sky-500/90">
+                    Coastal&nbsp;Beach&nbsp;Company
+                  </div>
 
-                {/* When a home is selected show PM + nearest access */}
-                {selectedProperty ? (
-                  <div className="text-sm text-sky-700/90">
-                    {selectedProperty.address && (
-                      <span className="mr-3">{selectedProperty.address}</span>
-                    )}
-                    {selectedProperty.pm && (
-                      <span className="mr-3">
-                        PM:{" "}
-                        <span className="font-medium">
-                          {selectedProperty.pm}
-                        </span>
+                  {/* Home name */}
+                  <h1 className="mt-2 font-sans font-semibold text-3xl md:text-4xl leading-[1.1] tracking-tight text-sky-950">
+                    {selectedProperty!.name}
+                  </h1>
+
+                  {/* Address */}
+                  {selectedProperty!.address && (
+                    <p className="mt-1 text-sm md:text-base text-sky-700/95">
+                      {selectedProperty!.address}
+                    </p>
+                  )}
+                </div>
+
+                {/* Chips and action */}
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                {selectedProperty.pm && (
+  <span className="mr-3 font-medium text-sky-800">
+    {selectedProperty.pm}
+  </span>
+)}
+                  {nearestAccess && (
+                    <span className="inline-flex items-center rounded-full border border-sky-100 bg-white px-3 py-1.5 text-sm text-sky-900 shadow-[0_1px_0_0_rgba(2,132,199,0.06)]">
+                      Closest access:
+                      <span className="ml-1 font-medium">
+                        {nearestAccess.name}
                       </span>
-                    )}
-                    {nearestAccess && (
-                      <span>
-                        Closest access:{" "}
-                        <span className="font-medium">
-                          {nearestAccess.name}
-                        </span>
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-sm text-sky-700/70">
-                    Select your home to personalize your suite.
-                  </div>
-                )}
+                    </span>
+                  )}
+                  <button
+                    aria-label="Change home"
+                    onClick={() => {
+                      setSelectedProperty(null);
+                      setStartDate("");
+                      setEndDate("");
+                    }}
+                    className="inline-flex items-center rounded-full border border-sky-200/80 bg-sky-50 px-3 py-1.5 text-sm text-sky-900 hover:bg-sky-100 transition"
+                  >
+                    Change home
+                  </button>
+                </div>
               </div>
 
-              {/* Search input */}
-              <div className="relative z-40">
+              {/* subtle divider */}
+              <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-sky-100 to-transparent" />
+
+              {/* Beach Chair Service date range */}
+              <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3 md:items-end">
+                <div className="md:col-span-1">
+                  <p className="text-xs tracking-wide uppercase text-sky-600/80">
+                    Beach Chair Service
+                  </p>
+                  <p className="text-sm text-sky-800/90">
+                    Choose your start and end dates.
+                  </p>
+                </div>
+
+                <label className="flex flex-col">
+                  <span className="mb-1 text-xs font-medium text-sky-800/90">
+                    Start date
+                  </span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setStartDate(v);
+                      if (endDate && v && endDate < v) setEndDate("");
+                    }}
+                    className="h-11 rounded-xl border border-sky-200/80 bg-white/80 px-3 text-sky-900 shadow-[0_1px_0_0_rgba(2,132,199,0.05)] focus:outline-none focus:ring-2 focus:ring-sky-300"
+                  />
+                </label>
+
+                <label className="flex flex-col">
+                  <span className="mb-1 text-xs font-medium text-sky-800/90">
+                    End date
+                  </span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={endMin}
+                    className="h-11 rounded-xl border border-sky-200/80 bg-white/80 px-3 text-sky-900 shadow-[0_1px_0_0_rgba(2,132,199,0.05)] focus:outline-none focus:ring-2 focus:ring-sky-300"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Search card (only before selection)
+          // NOTE: z-index bump so the autocomplete menu always overlays cards below.
+          <div className="relative z-[120] rounded-3xl border border-sky-100 bg-white/85 backdrop-blur-xl shadow-[0_24px_60px_-28px_rgba(2,132,199,0.30)] mb-8">
+            <div className="p-6 md:p-8">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl md:text-3xl font-bold text-sky-950">
+                  30A Amenity Suite
+                </h1>
+                <div className="text-sm text-sky-700/75">
+                  Select your home to personalize your suite.
+                </div>
+              </div>
+              {/* wrapper must be positioned and above all other sections */}
+              <div className="mt-4 relative z-[200]">
                 <Search30A onSelect={setSelectedProperty} />
               </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Top row: Chairs + Map (left) / Itinerary (right) */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mb-8">
+        {/* ───────────────── Top row: Chairs & Map / Itinerary ─────────────────── */}
+        {/* Put the next section at a lower z to respect the search dropdown overlay */}
+        <section className="relative z-[0] grid grid-cols-1 lg:grid-cols-3 gap-6 items-start mb-8">
           {/* LEFT (span 2): Beach Chairs & Umbrellas + Map */}
           <div className="lg:col-span-2 rounded-3xl border border-sky-100 bg-white/80 backdrop-blur-xl shadow-[0_20px_50px_-30px_rgba(2,132,199,0.25)] overflow-hidden">
             {/* Header */}
@@ -185,7 +261,7 @@ export default function AmenitySuite30A() {
               </div>
             </div>
 
-            {/* Photo + Map — now separated with gap + rings so they don’t touch */}
+            {/* Photo + Map */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-sky-100 p-4">
               {/* Photo */}
               <div className="relative rounded-xl overflow-hidden ring-1 ring-slate-200">
@@ -216,6 +292,7 @@ export default function AmenitySuite30A() {
                   <span className="block text-xs text-sky-600/80">
                     {chairSets} set{chairSets > 1 ? "s" : ""} · $
                     {PRICES.chairWeekly}/week
+                    {startDate && endDate ? ` · ${startDate}–${endDate}` : ""}
                   </span>
                 </span>
                 <strong className="text-sky-900">${chairSubtotal}</strong>
@@ -267,7 +344,7 @@ export default function AmenitySuite30A() {
           </aside>
         </section>
 
-        {/* Lower cards (unchanged) */}
+        {/* Lower cards */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Beach Better Box */}
           <div className="rounded-3xl border border-sky-100 bg-white/80 backdrop-blur-xl hover:shadow-[0_20px_50px_-30px_rgba(2,132,199,0.3)] transition overflow-hidden">

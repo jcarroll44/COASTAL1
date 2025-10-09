@@ -7,14 +7,14 @@
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["app/*"] 
+      "@/*": ["app/*"]
     },
     "incremental": true,
     "plugins": [{ "name": "next" }],

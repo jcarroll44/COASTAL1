@@ -1,19 +1,31 @@
-import ProductLanding from "@/components/ProductLanding";
+import ServiceBookingPage, {
+  ServiceBookingConfig,
+} from "@/components/ServiceBookingPage";
 
-export default function PCBPhotographyPage() {
-  return (
-    <ProductLanding
-      title="PCB Family Photography"
-      subtitle="Golden-hour portraits on the beach."
-      hero="/cards/photo.jpg"
-      priceNote="$300 • 45–60 min"
-      bullets={[
-        { text: "Sunset sessions recommended" },
-        { text: "Online gallery delivery" },
-        { text: "Multiple group sizes" },
-      ]}
-      ctaText="View Options"
-      gallery={["/cards/photo.jpg"]}
-    />
-  );
+const config: ServiceBookingConfig = {
+  title: "PCB Family Photography",
+  blurb: "Golden-hour sessions on the beach. Edited & delivered online.",
+  hero: "/cards/photo.jpg",
+  supportsDateRange: false, // single date session
+  quantityLabel: "session",
+  packages: [
+    {
+      id: "std",
+      name: "Standard Session (45–60 min)",
+      price: 300,
+      details: "One location • golden hour",
+    },
+    {
+      id: "ext",
+      name: "Extended Session (75–90 min)",
+      price: 450,
+      details: "Multiple groupings",
+    },
+  ],
+  extras: [{ id: "photos", name: "Rush Edits", price: 60 }],
+  scope: "pcb",
+};
+
+export default function Page() {
+  return <ServiceBookingPage config={config} />;
 }

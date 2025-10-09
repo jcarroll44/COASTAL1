@@ -1,19 +1,23 @@
-import ProductLanding from "@/components/ProductLanding";
-
-export default function A30PhotographyPage() {
-  return (
-    <ProductLanding
-      title="30A Family Photography"
-      subtitle="Golden-hour portraits on the beach."
-      hero="/cards/photo.jpg"
-      priceNote="$300 • 45–60 min"
-      bullets={[
-        { text: "Sunset sessions recommended" },
-        { text: "Online gallery delivery" },
-        { text: "Multiple group sizes" },
-      ]}
-      ctaText="View Options"
-      gallery={["/cards/photo.jpg"]}
-    />
-  );
+import ServiceBookingPage, { Service } from "@/components/ServiceBookingPage";
+const HERO = "/cards/photo-full.jpg";
+const svc: Service = {
+  title: "30A Family Photography",
+  blurb: "Golden-hour beach sessions with edited image delivery.",
+  hero: HERO,
+  quantityLabel: "sessions",
+  askDate: true,
+  askTime: true,
+  packages: [
+    { id: "mini", name: "Mini Session", price: 300, details: "20–30 minutes" },
+    {
+      id: "full",
+      name: "Full Session",
+      price: 500,
+      details: "45–60 minutes",
+      badge: "Popular",
+    },
+  ],
+};
+export default function Page() {
+  return <ServiceBookingPage service={svc} />;
 }

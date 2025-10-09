@@ -1,37 +1,40 @@
-// app/chairs/page.tsx
-"use client";
+import ServiceBookingPage, { Service } from "@/components/ServiceBookingPage";
 
-import { ItineraryProvider } from "@/components/Itinerary";
-import AlaCarteTemplate from "@/components/AlaCarteTemplate";
+const HERO = "/cards/chairs-day.jpg";
 
-export default function ChairsPage() {
-  return (
-    <ItineraryProvider>
-      <AlaCarteTemplate
-        title="Chairs & Umbrellas"
-        tagline="Premium wooden sets, placed for you daily."
-        heroImage="/hero/chairs-hero.jpg" // swap to your best image
-        options={[
-          {
-            id: "chair-set",
-            title: "Chair Set (2 chairs + 1 umbrella)",
-            image: "/cards/chairs-week.jpg",
-            price: 300,
-            note: "$55/day • $300/week",
-          },
-          {
-            id: "front-row",
-            title: "Front-Row Upgrade",
-            image: "/cards/front-row.jpg",
-            price: 360,
-            note: "Select locations • subject to access",
-          },
-        ]}
-        addons={[
-          { id: "extra-chair", title: "Extra Chair", price: 25 },
-          { id: "cooler-ice", title: "Cooler with Ice", price: 20 },
-        ]}
-      />
-    </ItineraryProvider>
-  );
+const svc: Service = {
+  title: "30A Chairs & Umbrellas",
+  blurb: "Daily setup & takedown. Two chairs + one umbrella per set.",
+  hero: HERO,
+  quantityLabel: "sets",
+  askDate: true,
+  packages: [
+    {
+      id: "day",
+      name: "Reserve Per Day",
+      price: 55,
+      details: "Setup by 9am, takedown at sunset",
+    },
+    {
+      id: "week",
+      name: "Reserve Week (Mon–Fri)",
+      price: 300,
+      details: "9am setup · sunset takedown",
+      badge: "Best Value",
+    },
+  ],
+  addons: [
+    { id: "extra-chair", name: "Extra Chair", price: 10 },
+    { id: "extra-umbrella", name: "Extra Umbrella", price: 20 },
+  ],
+  bullets: [
+    "Choose your nearest 30A beach access",
+    "Setup by 9am, takedown at sunset",
+    "Weekly discount available",
+  ],
+  priceNote: "Starting at $55/day",
+};
+
+export default function Page() {
+  return <ServiceBookingPage service={svc} />;
 }

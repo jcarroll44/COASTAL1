@@ -1,184 +1,172 @@
-// app/components/ServicesCarousel.tsx
+// components/ServicesCarousel.tsx
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useEffect } from "react";
+import Image from "next/image";
+import { useCallback, useMemo, useRef } from "react";
 
 type Item = {
   title: string;
   blurb: string;
   image: string;
   href: string;
-  badge?: string;
+  badge?: string; // <- can keep or remove, doesn’t matter if not used
 };
 
-export default function ServicesCarousel({ items }: { items: Item[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [cardW, setCardW] = useState(300);
-  const [index, setIndex] = useState(0);
-  const GAP = 24; // matches gap-6
+export default function ServicesCarousel({
+  items,
+  kicker = "Beach Essentials by Coastal",
+  title = "Signature Services – All in One Place.",
+}: {
+  items: Item[];
+  kicker?: string;
+  title?: string;
+}) {
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-  // measure exactly 1/2/4-up
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const ro = new ResizeObserver(([entry]) => {
-      const w = entry.contentRect.width;
-      let cols = 1;
-      if (w >= 1024) cols = 4;
-      else if (w >= 768) cols = 2;
-
-      const totalGap = GAP * (cols - 1);
-      const cw = Math.max(260, Math.floor((w - totalGap) / cols));
-      setCardW(cw);
-    });
-
-    ro.observe(el);
-    return () => ro.disconnect();
+  const GAP_PX = 20; // gap-5
+  const stepPx = useMemo(() => {
+    const el = firstCardRef.current;
+    if (!el) return 0;
+    const rect = el.getBoundingClientRect();
+    return Math.round(rect.width + GAP_PX);
   }, []);
 
-  const cols = useMemo(() => {
-    if (typeof window === "undefined") return 4;
-    const w = containerRef.current?.clientWidth ?? 1200;
-    if (w >= 1024) return 4;
-    if (w >= 768) return 2;
-    return 1;
-  }, [cardW]);
-
-  const maxIndex = Math.max(0, items.length - cols);
-  const nudge = (dir: 1 | -1) =>
-    setIndex((i) => Math.min(maxIndex, Math.max(0, i + dir)));
+  const scrollOne = useCallback(
+    (dir: "prev" | "next") => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const fallback = Math.round(el.clientWidth / 4);
+      const amount = stepPx > 0 ? stepPx : fallback;
+      el.scrollBy({
+        left: dir === "next" ? amount : -amount,
+        behavior: "smooth",
+      });
+    },
+    [stepPx]
+  );
 
   return (
-    <section className="relative py-10 md:py-12">
+    <div className="rounded-3xl border border-sky-100 bg-gradient-to-b from-sky-50/80 via-white to-sky-50/70 p-6 md:p-8 shadow-[0_18px_60px_-35px_rgba(2,132,199,0.35)]">
       {/* Header */}
-      <div className="mb-6 md:mb-8 flex items-end justify-between">
+      <div className="mb-5 flex items-center justify-between gap-3 md:mb-6">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.22em] text-sky-600">
-            Beach essentials by Coastal
-          </p>
-          <h2 className="mt-2 text-[22px] md:text-[28px] font-bold text-text-sky-600">
-            Signature Services - All in One Place.
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-500">
+            {kicker}
+          </div>
+          <h2 className="text-xl font-semibold tracking-tight text-sky-900 md:text-2xl">
+            {title}
           </h2>
         </div>
-
-        <div className="hidden md:flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             aria-label="Previous"
-            onClick={() => nudge(-1)}
-            className="rounded-full border border-sky-200 bg-white px-3 py-2 text-sky-800 hover:bg-sky-50 transition disabled:opacity-40"
-            disabled={index === 0}
+            onClick={() => scrollOne("prev")}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-700 shadow-sm hover:bg-sky-50"
           >
-            ‹
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 19l-7-7 7-7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
           <button
             aria-label="Next"
-            onClick={() => nudge(1)}
-            className="rounded-full border border-sky-200 bg-white px-3 py-2 text-sky-800 hover:bg-sky-50 transition disabled:opacity-40"
-            disabled={index === maxIndex}
+            onClick={() => scrollOne("next")}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-700 shadow-sm hover:bg-sky-50"
           >
-            ›
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M9 5l7 7-7 7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
         </div>
       </div>
 
-      {/* Wrapper: hide X only; allow Y to show so shadows/hover aren’t clipped */}
+      {/* Single-row carousel */}
       <div
-        ref={containerRef}
-        className="relative overflow-x-hidden overflow-y-visible"
+        ref={scrollerRef}
+        className="
+          flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory
+          [scrollbar-width:none] [-ms-overflow-style:none]
+          pr-5
+        "
+        style={{ scrollPaddingLeft: 20, scrollPaddingRight: 20 }}
       >
-        {/* Small vertical padding avoids any optical clipping even without hover */}
-        <div
-          className="flex gap-6 py-1 transition-transform duration-500 ease-[cubic-bezier(.22,.61,.36,1)]"
-          style={{ transform: `translate3d(${-index * (cardW + GAP)}px,0,0)` }}
-        >
-          {items.map((it) => (
-            <Link
-              href={it.href}
-              key={it.title}
-              className={[
-                "group block shrink-0 rounded-2xl bg-white",
-                "ring-1 ring-slate-100",
-                "shadow-[0_8px_28px_rgba(2,132,199,0.12)]",
-                "transition-transform duration-300 ease-[cubic-bezier(.2,.7,.3,1)]",
-                "hover:-translate-y-[3px] hover:scale-[1.01]",
-                "hover:shadow-[0_16px_38px_rgba(2,132,199,0.18)]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300",
-              ].join(" ")}
-              style={{ width: `${cardW}px` }}
-            >
-              {/* Fixed aspect image keeps all cards equal height */}
-              <div className="relative overflow-hidden rounded-t-2xl">
-                <div className="relative aspect-[16/10]">
-                  <img
-                    src={it.image}
-                    alt={it.title}
-                    className="absolute inset-0 h-full w-full object-cover"
-                    draggable={false}
-                  />
-                </div>
+        <style>{`div::-webkit-scrollbar{display:none}`}</style>
 
-                {it.badge && (
-                  <span className="absolute left-3 top-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-sky-700 ring-1 ring-slate-200 shadow-sm">
-                    {it.badge}
-                  </span>
-                )}
+        {items.map((item, idx) => (
+          <article
+            key={idx}
+            ref={idx === 0 ? firstCardRef : undefined}
+            className="snap-start shrink-0 w-[85%] sm:w-[60%] md:w-[48%] lg:w-[24%]"
+          >
+            <Link
+              href={item.href}
+              className="
+                group block h-full overflow-hidden rounded-2xl border border-sky-100 bg-white 
+                ring-1 ring-transparent transition hover:ring-sky-200
+                shadow-[0_10px_30px_-20px_rgba(2,132,199,0.25)]
+              "
+            >
+              <div className="relative h-40 w-full sm:h-44 md:h-44 lg:h-44">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                  className="object-cover"
+                  priority={idx < 4}
+                />
+                {/* 🔴 Removed badge pill here */}
               </div>
 
-              {/* Content */}
-              <div className="p-4">
-                <div className="text-[11px] tracking-[0.18em] text-slate-500 uppercase">
-                  Service
+              <div className="flex h-[170px] flex-col justify-between px-4 py-3">
+                <div>
+                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-500">
+                    Service
+                  </div>
+                  <h3 className="line-clamp-1 text-base font-semibold text-sky-900">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 text-sm text-sky-700/90">
+                    {item.blurb}
+                  </p>
                 </div>
-                <h3 className="mt-1 text-[18px] md:text-[19px] font-semibold text-[#0a2b47]">
-                  {it.title}
-                </h3>
-                <p className="mt-2 text-[14px] leading-[1.7] text-slate-700/90">
-                  {it.blurb}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-sky-900">
-                  View details
+
+                <div className="mt-3 flex items-center gap-1 text-sm font-medium text-sky-700">
+                  <span>View details</span>
                   <svg
-                    width="14"
-                    height="14"
+                    className="transition group-hover:translate-x-0.5"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
-                    className="transition-transform group-hover:translate-x-0.5"
+                    fill="none"
                   >
                     <path
-                      d="M5 12h14M13 5l7 7-7 7"
+                      d="M9 5l7 7-7 7"
                       stroke="currentColor"
-                      strokeWidth="1.5"
-                      fill="none"
+                      strokeWidth="2"
                       strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </svg>
-                </span>
+                </div>
               </div>
             </Link>
-          ))}
-        </div>
-
-        {/* Mobile arrows */}
-        <div className="md:hidden pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-1">
-          <button
-            aria-label="Previous"
-            onClick={() => nudge(-1)}
-            className="pointer-events-auto rounded-full border border-sky-200 bg-white/95 px-3 py-2 text-sky-800 shadow-md disabled:opacity-40"
-            disabled={index === 0}
-          >
-            ‹
-          </button>
-          <button
-            aria-label="Next"
-            onClick={() => nudge(1)}
-            className="pointer-events-auto rounded-full border border-sky-200 bg-white/95 px-3 py-2 text-sky-800 shadow-md disabled:opacity-40"
-            disabled={index === maxIndex}
-          >
-            ›
-          </button>
-        </div>
+          </article>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }

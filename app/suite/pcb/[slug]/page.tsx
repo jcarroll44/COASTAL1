@@ -1,13 +1,11 @@
 // app/suite/pcb/[slug]/page.tsx
-import { getPropertyBySlug } from "@/data/properties";
-import PropertySuite from "@/components/PropertySuite";
+"use client";
 
-export default function PCBSuitePage({ params }: { params: { slug: string } }) {
-  const property = getPropertyBySlug(params.slug);
+import { useParams } from "next/navigation";
+import PCBAmenitySuitePage from "../page";
 
-  if (!property) {
-    return <div className="p-10 text-red-600">Property not found.</div>;
-  }
-
-  return <PropertySuite property={property} />;
+export default function PcbSuiteSlugPage() {
+  const params = useParams();
+  const slug = (params?.slug as string) || undefined;
+  return <PCBAmenitySuitePage initialSlug={slug} />;
 }

@@ -92,7 +92,7 @@ export default function Header() {
             </a>
             <Link
               href="/suite"
-              className="inline-flex h-11 items-center rounded-full bg-sky-700 px-5 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(2,132,199,0.28)] hover:bg-sky-800"
+              className="inline-flex h-10 items-center rounded-full bg-sky-600 px-5 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(2,132,199,0.28)] hover:bg-sky-800"
             >
               Build Your Week
             </Link>

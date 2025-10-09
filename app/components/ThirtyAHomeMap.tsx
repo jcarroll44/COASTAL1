@@ -22,7 +22,7 @@ type Access = {
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
-/* ---------- helpers ---------- */
+/* ---------------- helpers ---------------- */
 
 function cleanAccesses(raw: RawAccess[]): Access[] {
   if (!Array.isArray(raw)) return [];
@@ -99,11 +99,24 @@ function haversineMeters(
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
 }
 
+function findNearest(
+  origin: { lat: number; lng: number },
+  accesses: Access[]
+): { access: Access; meters: number } | null {
+  if (!accesses.length) return null;
+  let best: { access: Access; meters: number } | null = null;
+  for (const a of accesses) {
+    const m = haversineMeters(origin, { lat: a.lat, lng: a.lng });
+    if (!best || m < best.meters) best = { access: a, meters: m };
+  }
+  return best;
+}
+
 async function drivingMatrix(
   origin: { lng: number; lat: number },
   accesses: Access[],
   token: string
-): Promise<Access | null> {
+): Promise<{ access: Access; seconds: number } | null> {
   if (!accesses.length) return null;
   const coords = [
     [origin.lng, origin.lat],
@@ -131,7 +144,7 @@ async function drivingMatrix(
       bestIdx = i;
     }
   });
-  return bestIdx >= 0 ? accesses[bestIdx] : null;
+  return bestIdx >= 0 ? { access: accesses[bestIdx], seconds: best } : null;
 }
 
 async function fetchRoute(
@@ -150,7 +163,7 @@ async function fetchRoute(
   return (json?.routes?.[0]?.geometry?.coordinates as [number, number][]) ?? [];
 }
 
-/* ---------- component ---------- */
+/* ---------------- component ---------------- */
 
 export default function ThirtyAHomeMap({
   mapStyle = "mapbox://styles/mapbox/navigation-day-v1",
@@ -169,6 +182,7 @@ export default function ThirtyAHomeMap({
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<Map | null>(null);
+  const typeaheadRef = useRef<HTMLDivElement | null>(null);
 
   const [styleUrl, setStyleUrl] = useState(mapStyle);
   const [accesses, setAccesses] = useState<Access[]>([]);
@@ -183,7 +197,6 @@ export default function ThirtyAHomeMap({
   const [distanceMi, setDistanceMi] = useState<number | null>(null);
   const [etaMin, setEtaMin] = useState<number | null>(null);
 
-  // suggestions
   const [suggestions, setSuggestions] = useState<
     { label: string; lng: number; lat: number }[]
   >([]);
@@ -194,7 +207,7 @@ export default function ThirtyAHomeMap({
   const originMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const nearestMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
-  /* ---- load accesses ---- */
+  /* ---- load access data ---- */
   useEffect(() => {
     let live = true;
     (async () => {
@@ -210,6 +223,16 @@ export default function ThirtyAHomeMap({
     return () => {
       live = false;
     };
+  }, []);
+
+  /* ---- outside click closes dropdown ---- */
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!typeaheadRef.current) return;
+      if (!typeaheadRef.current.contains(e.target as Node)) setSuggestions([]);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
   /* ---- init map ---- */
@@ -238,7 +261,7 @@ export default function ThirtyAHomeMap({
 
     map.on("load", () => {
       map.resize();
-      // 3) blue dots appear immediately
+      // blue dots immediately
       addAccessMarkers(map, accesses);
     });
 
@@ -252,7 +275,7 @@ export default function ThirtyAHomeMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ---- re-add markers when data loads ---- */
+  /* ---- re-add markers when data changes ---- */
   useEffect(() => {
     const m = mapRef.current;
     if (!m || !m.isStyleLoaded()) return;
@@ -277,18 +300,17 @@ export default function ThirtyAHomeMap({
   }, [styleUrl]);
 
   function addAccessMarkers(map: Map, list: Access[]) {
-    // clear old set
     accessMarkersRef.current.forEach((m) => m.remove());
     accessMarkersRef.current = [];
     list.forEach((a) => {
       const el = document.createElement("div");
       el.className =
         "rounded-full ring-2 ring-white bg-sky-600 w-3.5 h-3.5 shadow-[0_6px_18px_rgba(0,0,0,0.25)]";
-      const marker = new mapboxgl.Marker({ element: el })
+      const mk = new mapboxgl.Marker({ element: el })
         .setLngLat([a.lng, a.lat])
         .setPopup(new mapboxgl.Popup({ offset: 12 }).setText(a.name))
         .addTo(map);
-      accessMarkersRef.current.push(marker);
+      accessMarkersRef.current.push(mk);
     });
   }
 
@@ -339,7 +361,7 @@ export default function ThirtyAHomeMap({
       paint: { "line-color": "#0369a1", "line-width": 6, "line-opacity": 0.95 },
     });
 
-    // 4) Green origin dot + emphasize blue nearest dot
+    // green origin + stronger blue nearest pins
     originMarkerRef.current?.remove();
     const originEl = document.createElement("div");
     originEl.className =
@@ -356,11 +378,11 @@ export default function ThirtyAHomeMap({
       .setLngLat([to.lng, to.lat])
       .addTo(map);
 
-    // zoom so the full highlighted route is visible
+    // keep entire route in view (slightly more zoomed-in than before)
     const b = new mapboxgl.LngLatBounds();
     b.extend([from.lng, from.lat]);
     b.extend([to.lng, to.lat]);
-    map.fitBounds(b, { padding: 140, duration: 650, maxZoom: 15 });
+    map.fitBounds(b, { padding: 110, duration: 650, maxZoom: 16 }); // <- tighter view
   }
 
   /* ---- debounced suggestions ---- */
@@ -368,7 +390,7 @@ export default function ThirtyAHomeMap({
     if (!typing) return;
     const id = setTimeout(async () => {
       const q = query.trim();
-      if (!q || q.length < 3) {
+      if (q.length < 3) {
         setSuggestions([]);
         setTyping(false);
         return;
@@ -380,12 +402,12 @@ export default function ThirtyAHomeMap({
     return () => clearTimeout(id);
   }, [query, typing]);
 
-  /* ---- unified "select address" path ---- */
   async function selectSuggestion(s: {
     label: string;
     lng: number;
     lat: number;
   }) {
+    // lock the input to the chosen label
     setQuery(s.label);
     setSuggestions([]);
 
@@ -394,10 +416,18 @@ export default function ThirtyAHomeMap({
 
     if (!accesses.length || !mapboxgl.accessToken) return;
 
-    const best = await drivingMatrix(geo, accesses, mapboxgl.accessToken);
-    if (!best) return;
+    const byMatrix = await drivingMatrix(geo, accesses, mapboxgl.accessToken);
+    const choice =
+      byMatrix ??
+      (function () {
+        const nearest = findNearest({ lat: geo.lat, lng: geo.lng }, accesses);
+        return nearest ? { access: nearest.access, seconds: NaN } : null;
+      })();
 
-    setNearest(best);
+    if (!choice) return;
+
+    const best = choice.access;
+    setNearest(best); // enables Book Chairs
 
     const meters = haversineMeters(
       { lat: geo.lat, lng: geo.lng },
@@ -405,23 +435,23 @@ export default function ThirtyAHomeMap({
     );
     setDistanceMi(Math.max(0.1, +(meters / 1609.34).toFixed(1)));
 
-    // if you later want live ETA, wire Mapbox Directions duration here
-    setEtaMin(null);
+    setEtaMin(
+      Number.isFinite(choice.seconds)
+        ? Math.max(1, Math.round(choice.seconds / 60))
+        : null
+    );
 
     if (mapRef.current) await drawRoute(mapRef.current, geo, best);
   }
 
-  /* ---- manual submit ---- */
   async function onFind() {
-    if (!query.trim() || !mapboxgl.accessToken || !mapRef.current) return;
-    if (!accesses.length) return;
-
-    const geo = await geocode(query.trim(), mapboxgl.accessToken);
+    const q = query.trim();
+    if (!q || !mapboxgl.accessToken) return;
+    const geo = await geocode(q, mapboxgl.accessToken);
     if (!geo) return;
-    await selectSuggestion(geo);
+    await selectSuggestion({ label: geo.label, lng: geo.lng, lat: geo.lat });
   }
 
-  /* ---- booking CTA ---- */
   function handleBook() {
     if (!nearest) return;
     const q = new URLSearchParams({
@@ -433,19 +463,18 @@ export default function ThirtyAHomeMap({
     router.push(`${bookingPath}?${q}`);
   }
 
-  if (!mapboxgl.accessToken) {
-    return (
-      <div className="rounded-3xl border border-sky-100 bg-white/80 p-6 text-sky-700">
-        Missing <code>NEXT_PUBLIC_MAPBOX_TOKEN</code>. Add it to{" "}
-        <code>.env.local</code> and restart the server.
-      </div>
-    );
-  }
-
   const googleMapsHref =
     origin && nearest
       ? `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${nearest.lat},${nearest.lng}`
       : "#";
+
+  if (!mapboxgl.accessToken) {
+    return (
+      <div className="rounded-3xl border border-sky-100 bg-white/80 p-6 text-sky-700">
+        Missing <code>NEXT_PUBLIC_MAPBOX_TOKEN</code>.
+      </div>
+    );
+  }
 
   return (
     <section className="rounded-3xl border border-sky-100 bg-white/90 backdrop-blur-xl p-5 md:p-6 shadow-[0_20px_50px_-30px_rgba(2,132,199,0.25)]">
@@ -494,12 +523,11 @@ export default function ThirtyAHomeMap({
       </div>
 
       {/* Controls */}
-      <div className="mb-3 flex flex-col gap-2 md:flex-row">
+      <div className="mb-3 flex flex-col gap-2 md:flex-row" ref={typeaheadRef}>
         <div className="relative flex-1">
           <input
             value={query}
             onFocus={() => setTyping(true)}
-            onBlur={() => setTimeout(() => setTyping(false), 150)}
             onChange={(e) => {
               setQuery(e.target.value);
               setTyping(true);
@@ -512,14 +540,15 @@ export default function ThirtyAHomeMap({
             }}
             className="w-full rounded-xl border border-sky-200 bg-white/95 px-4 py-2 text-sm shadow-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
             placeholder="Enter any address (Iowa, NYC, or 30A)…"
+            autoComplete="off"
           />
-          {!!typing && suggestions.length > 0 && (
+          {suggestions.length > 0 && (
             <div className="absolute z-[300] mt-1 w-full overflow-hidden rounded-xl border border-sky-200 bg-white shadow-lg">
               {suggestions.map((s, i) => (
                 <button
                   key={i}
                   onMouseDown={(e) => {
-                    e.preventDefault();
+                    e.preventDefault(); // select before input blur
                     selectSuggestion(s);
                   }}
                   className="block w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-sky-50"
@@ -543,9 +572,9 @@ export default function ThirtyAHomeMap({
       <div className="relative w-full overflow-hidden rounded-2xl ring-1 ring-slate-200">
         <div ref={containerRef} style={{ height }} className="w-full" />
 
-        {/* Advanced bottom-left card */}
+        {/* Bottom-left card */}
         {origin && nearest && (
-          <div className="absolute bottom-3 left-3 w-[min(560px,calc(100%-24px))] rounded-2xl bg-white/96 backdrop-blur px-4 py-3 ring-1 ring-slate-200 shadow-[0_10px_30px_rgba(2,132,199,0.18)] pointer-events-auto">
+          <div className="absolute bottom-3 left-3 w-[min(560px,calc(100%-24px))] rounded-2xl bg-[rgba(255,255,255,0.97)] backdrop-blur px-4 py-3 ring-1 ring-slate-200 shadow-[0_10px_30px_rgba(2,132,199,0.18)] pointer-events-auto">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-[11px] font-semibold uppercase tracking-wide text-sky-600">
@@ -558,14 +587,16 @@ export default function ThirtyAHomeMap({
                   From: <span className="font-medium">{origin.label}</span>
                 </div>
               </div>
+
+              {/* compact, brand-neutral pills */}
               <div className="flex items-center gap-2">
                 {distanceMi != null && (
-                  <span className="rounded-full bg-sky-600/10 px-2 py-[3px] text-[12px] font-semibold text-sky-700 ring-1 ring-sky-200">
+                  <span className="rounded-full bg-sky-50 px-2 py-[2px] text-[12px] font-semibold text-sky-700 ring-1 ring-sky-200">
                     {distanceMi} <span className="font-medium">mi</span>
                   </span>
                 )}
                 {etaMin != null && (
-                  <span className="rounded-full bg-emerald-600/10 px-2 py-[3px] text-[12px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                  <span className="rounded-full bg-emerald-50 px-2 py-[2px] text-[12px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
                     {etaMin} <span className="font-medium">min</span>
                   </span>
                 )}

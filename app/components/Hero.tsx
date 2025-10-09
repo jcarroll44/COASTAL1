@@ -1,37 +1,73 @@
-// components/Hero.tsx
-import Image from "next/image";
+"use client";
 
-export default function Hero({ image }: { image: string }) {
+import { useEffect, useState } from "react";
+
+type HeroProps = {
+  // pass either a single image OR an array
+  image?: string;
+  images?: string[];
+  interval?: number; // ms
+  heightClamp?: string; // CSS clamp string, e.g. "clamp(480px, 68vh, 860px)"
+  objectPosition?: string; // crop focus
+};
+
+export default function Hero({
+  image,
+  images,
+  interval = 6000,
+  heightClamp = "clamp(600px, 90vh, 1200px)",
+  objectPosition = "center 50%",
+}: HeroProps) {
+  // normalize slides safely
+  const slides = images?.length ? images : image ? [image] : ["/hero.jpg"];
+  const [idx, setIdx] = useState(0);
+
+  // auto-advance only if more than 1 slide
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const id = window.setInterval(
+      () => setIdx((i) => (i + 1) % slides.length),
+      interval
+    );
+    return () => window.clearInterval(id);
+  }, [slides.length, interval]);
+
   return (
-    <section className="relative coastal-container mt-6">
-      {/* Hero Image */}
-      <div className="relative overflow-hidden rounded-2xl shadow-lg">
-        <Image
-          src={image}
-          alt="Coastal hero"
-          width={1600}
-          height={900}
-          priority
-          className="w-full object-cover h-[420px] sm:h-[560px] md:h-[640px]"
-        />
+    <section className="relative w-full">
+      {/* full-bleed, tall, no max-width */}
+      <div
+        className="relative w-full overflow-hidden"
+        style={{ height: heightClamp }}
+      >
+        {slides.map((src, i) => (
+          <img
+            key={src}
+            src={src}
+            alt=""
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-800 ${
+              i === idx ? "opacity-100" : "opacity-0"
+            }`}
+            style={{ objectPosition }}
+            loading={i === 0 ? "eager" : "lazy"}
+            decoding="async"
+          />
+        ))}
 
-        {/* Selection Bar */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-[80%] md:w-[70%]">
-          <div className="flex gap-2 items-center rounded-full bg-white/95 backdrop-blur-md border border-sky-200 shadow-lg px-4 py-2">
-            <input
-              type="text"
-              placeholder="Enter your rental address or home name"
-              className="flex-1 h-11 rounded-full border border-sky-200 px-4 text-[14px] outline-none focus:ring-2 focus:ring-sky-300 bg-white"
-            />
-            <select className="h-11 rounded-full border border-sky-200 px-3 text-[14px] bg-white">
-              <option value="pcb">PCB</option>
-              <option value="30a">30A</option>
-            </select>
-            <button className="h-11 px-6 rounded-full bg-sky-900 text-white font-semibold hover:bg-sky-950 transition">
-              Open
-            </button>
+        {/* white dots (only when rotating) */}
+        {slides.length > 1 && (
+          <div className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                aria-label={`Show slide ${i + 1}`}
+                className={`h-2.5 w-2.5 rounded-full transition ${
+                  i === idx ? "bg-white" : "bg-white/45 hover:bg-white/70"
+                }`}
+              />
+            ))}
           </div>
-        </div>
+        )}
       </div>
     </section>
   );

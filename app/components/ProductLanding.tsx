@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { PCB_LOCATIONS, A30_LOCATIONS } from "../data/locations";
+
 type Bullet = { icon?: React.ReactNode; text: string };
 
 export default function ProductLanding({
@@ -10,23 +14,36 @@ export default function ProductLanding({
   bullets = [],
   ctaText = "Reserve Now",
   gallery = [],
-  children, // for custom sections (map, extra copy, etc.)
+  children,
 }: {
   title: string;
   subtitle?: string;
-  hero: string; // /public path
+  hero: string;
   priceNote?: string;
   bullets?: Bullet[];
   ctaText?: string;
-  gallery?: string[]; // image paths
+  gallery?: string[];
   children?: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isPCB = pathname?.startsWith("/pcb") ?? false;
+  const is30A = pathname?.startsWith("/30a") ?? false;
+  const [location, setLocation] = useState("");
+
+  const label = isPCB
+    ? "Location (PCB condo)"
+    : is30A
+    ? "Nearest 30A beach access"
+    : "";
+  const options = isPCB ? PCB_LOCATIONS : is30A ? A30_LOCATIONS : [];
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-sky-50/40 to-white">
       {/* Hero */}
       <section className="coastal-container pt-6">
         <div className="relative overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-[0_22px_70px_-30px_rgba(9,30,66,0.12)]">
           <div className="grid grid-cols-1 lg:grid-cols-12">
+            {/* Left: Image */}
             <div className="lg:col-span-7">
               <img
                 src={hero}
@@ -34,6 +51,8 @@ export default function ProductLanding({
                 className="h-[440px] w-full object-cover"
               />
             </div>
+
+            {/* Right: Content */}
             <div className="flex flex-col justify-between p-6 lg:col-span-5">
               <div>
                 <h1 className="text-2xl font-extrabold tracking-tight text-sky-900">
@@ -44,6 +63,37 @@ export default function ProductLanding({
                 {priceNote && (
                   <div className="mt-4 inline-flex rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[13px] font-semibold text-sky-800">
                     {priceNote}
+                  </div>
+                )}
+
+                {/* Location dropdown (auto PCB or 30A) */}
+                {options.length > 0 && (
+                  <div className="mt-4">
+                    <label className="mb-1 block text-[12px] font-semibold text-sky-900">
+                      {label}
+                    </label>
+                    <select
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-[14px] text-slate-800 outline-none focus:ring-2 focus:ring-sky-200"
+                    >
+                      <option value="">
+                        {isPCB
+                          ? "Select your PCB condo"
+                          : "Select beach access"}
+                      </option>
+                      {options.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                    {location && (
+                      <p className="mt-1 text-[12px] text-slate-500">
+                        Selected:{" "}
+                        <span className="font-medium">{location}</span>
+                      </p>
+                    )}
                   </div>
                 )}
 

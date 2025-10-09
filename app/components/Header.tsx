@@ -10,11 +10,9 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
@@ -55,16 +53,17 @@ export default function Header() {
           {/* CENTER NAV */}
           <nav className="hidden md:flex items-center justify-center gap-12 text-[15px] font-medium">
             <NavDropdown
-              label="Panama City Beach"
+              label={<Link href="/pcb">Panama City Beach</Link>}
               items={[
                 { label: "Chairs & Umbrellas", href: "/pcb/chairs" },
+                { label: "Watersports", href: "/pcb/water-sports" },
                 { label: "Beach Bonfires", href: "/pcb/bonfires" },
                 { label: "Family Photography", href: "/pcb/photography" },
-                { label: "Watersports", href: "/pcb/watersports" },
               ]}
             />
+
             <NavDropdown
-              label="30A / South Walton"
+              label={<Link href="/30a">30A / South Walton</Link>}
               items={[
                 { label: "Chairs & Umbrellas", href: "/30a/chairs" },
                 { label: "Beach Bonfires", href: "/30a/bonfires" },
@@ -72,8 +71,14 @@ export default function Header() {
                 { label: "Beach Better Box", href: "/30a/beach-better-box" },
               ]}
             />
+
             <Link href="/about" className="text-slate-700 hover:text-slate-900">
               About
+            </Link>
+
+            {/* NEW: Jobs link */}
+            <Link href="/jobs" className="text-slate-700 hover:text-slate-900">
+              Jobs
             </Link>
           </nav>
 
@@ -87,7 +92,7 @@ export default function Header() {
             </a>
             <Link
               href="/suite"
-              className="inline-flex h-11 items-center rounded-full bg-sky-700 px-5 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(2,132,199,0.28)] hover:bg-sky-800"
+              className="inline-flex h-10 items-center rounded-full bg-sky-600 px-5 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(2,132,199,0.28)] hover:bg-sky-800"
             >
               Build Your Week
             </Link>

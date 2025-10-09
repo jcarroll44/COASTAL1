@@ -1,24 +1,21 @@
-import ProductLanding from "@/components/ProductLanding";
+import ServiceBookingPage, {
+  ServiceBookingConfig,
+} from "@/components/ServiceBookingPage";
 
-export default function PCBChairsPage() {
-  return (
-    <ProductLanding
-      title="PCB Chairs & Umbrellas"
-      subtitle="1 set = 2 chairs + 1 umbrella — placed for you daily."
-      hero="/cards/chairs-pcb.jpg"
-      priceNote="$55/day • $300/week per set"
-      bullets={[
-        { text: "Premium canvas chairs & shade" },
-        { text: "Daily setup & takedown by our team" },
-        { text: "Closest public access to your rental" },
-      ]}
-      ctaText="Check Access & Dates"
-      gallery={["/cards/chairs-pcb.jpg", "/hero-pcb.jpg"]}
-    >
-      <p className="text-sky-800">
-        Pick your beach access, choose dates, and we’ll do the rest. Need
-        multiple sets or special placement? Add it in the notes.
-      </p>
-    </ProductLanding>
-  );
+const config: ServiceBookingConfig = {
+  title: "PCB Chairs & Umbrellas",
+  blurb: "Daily setup & takedown. Two chairs + one umbrella per set.",
+  hero: "/cards/chairs-pcb.jpg",
+  supportsDateRange: true, // start + end dates
+  quantityLabel: "sets",
+  pricePerUnit: 55, // per set per day
+  extras: [
+    { id: "extra-chair", name: "Extra Chair", price: 10 },
+    { id: "extra-umbrella", name: "Extra Umbrella", price: 20 },
+  ],
+  scope: "pcb",
+};
+
+export default function Page() {
+  return <ServiceBookingPage config={config} />;
 }

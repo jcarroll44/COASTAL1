@@ -1,0 +1,296 @@
+[
+    {
+      "name": "Aqua Beach Resort",
+      "address": "15625 Front Beach Road, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "aqua-beach-resort"
+    },
+    {
+      "name": "Aqua Vista",
+      "address": "17155 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "aqua-vista"
+    },
+    {
+      "name": "Barefoot On The Beach",
+      "address": "11073 Front Beach Rd, Panama City Beach, FL 32407-3527",
+      "market": "pcb",
+      "slug": "barefoot-on-the-beach"
+    },
+    {
+      "name": "Beachcomber Beachfront Hotel",
+      "address": "17101 Front Beach Road, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "beachcomber-beachfront-hotel"
+    },
+    {
+      "name": "Beach Tower Beachfront Hotel",
+      "address": "12001 Front Beach Rd, Panama City Beach, FL 32407-3403",
+      "market": "pcb",
+      "slug": "beach-tower-beachfront-hotel"
+    },
+    {
+      "name": "Barefoot Hideaway",
+      "address": "15405 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "barefoot-hideaway"
+    },
+    {
+      "name": "Calypso Beach Resort",
+      "address": "15817 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "calypso-beach-resort"
+    },
+    {
+      "name": "Chateau Beachfront Hotel",
+      "address": "12525 Front Beach Rd, Panama City Beach, FL 32407-3306",
+      "market": "pcb",
+      "slug": "chateau-beachfront-hotel"
+    },
+    {
+      "name": "Celadon Beach Resort",
+      "address": "17757 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "celadon-beach-resort"
+    },
+    {
+      "name": "Commodore",
+      "address": "4715 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "commodore"
+    },
+    {
+      "name": "Coral Reef",
+      "address": "6609 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "coral-reef"
+    },
+    {
+      "name": "Dunes of Panama",
+      "address": "7205 Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "dunes-of-panama"
+    },
+    {
+      "name": "Embassy Suites",
+      "address": "16006 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "embassy-suites"
+    },
+    {
+      "name": "Grandview",
+      "address": "10713 Front Beach Rd, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "grandview"
+    },
+    {
+      "name": "Gulf Crest",
+      "address": "8715 Surf Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "gulf-crest"
+    },
+    {
+      "name": "Hadley's Beach",
+      "address": "5939 Gulf Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "hadleys-beach"
+    },
+    {
+      "name": "Hidden Dunes",
+      "address": "7115 Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "hidden-dunes"
+    },
+    {
+      "name": "Holiday Terrace Beachfront Hotel",
+      "address": "11831 Front Beach Rd, Panama City Beach, FL 32407-3601",
+      "market": "pcb",
+      "slug": "holiday-terrace-beachfront-hotel"
+    },
+    {
+      "name": "Laketown Wharf",
+      "address": "9902 S. Thomas Dr. Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "laketown-wharf"
+    },
+    {
+      "name": "Leeward Windward",
+      "address": "11212 Front Beach Rd, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "leeward-windward"
+    },
+    {
+      "name": "Long Beach",
+      "address": "Long Beach Resort, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "long-beach"
+    },
+    {
+      "name": "Marisol Condominium",
+      "address": "10719 Front Beach Rd, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "marisol-condominium"
+    },
+    {
+      "name": "Moon Drifter",
+      "address": "8815 Thomas Dr, Panama City Beach, FL 32408-4002",
+      "market": "pcb",
+      "slug": "moon-drifter"
+    },
+    {
+      "name": "Moonspinner",
+      "address": "4425 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "moonspinner"
+    },
+    {
+      "name": "Ocean Ritz",
+      "address": "10611 Front Beach Rd, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "ocean-ritz"
+    },
+    {
+      "name": "Ocean Towers",
+      "address": "11211 Front Beach Road, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "ocean-towers"
+    },
+    {
+      "name": "Russell-Fields City Pier",
+      "address": "16201 Front Beach Rd, Panama City Beach, FL",
+      "market": "pcb",
+      "slug": "russell-fields-city-pier"
+    },
+    {
+      "name": "Palmetto Beachfront Resort",
+      "address": "17255 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "palmetto-beachfront-resort"
+    },
+    {
+      "name": "Pelican Walk",
+      "address": "6905 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "pelican-walk"
+    },
+    {
+      "name": "Pineapple Willys",
+      "address": "9875 S Thomas Dr, Panama City Beach, FL 32408-4218",
+      "market": "pcb",
+      "slug": "pineapple-willys"
+    },
+    {
+      "name": "Princess Condominium",
+      "address": "6415 Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "princess-condominium"
+    },
+    {
+      "name": "Radisson Beachfront Hotel",
+      "address": "15325 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "radisson-beachfront-hotel"
+    },
+    {
+      "name": "Regency Towers",
+      "address": "5801 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "regency-towers"
+    },
+    {
+      "name": "Ramada",
+      "address": "15405 Front Beach Rd, Panama City Beach, FL 32413-2501",
+      "market": "pcb",
+      "slug": "ramada"
+    },
+    {
+      "name": "Rick Seltzer Park",
+      "address": "7419 Thomas Drive, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "rick-seltzer-park"
+    },
+    {
+      "name": "Sea Side Villas",
+      "address": "4701 Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "sea-side-villas"
+    },
+    {
+      "name": "Seychelles",
+      "address": "5115 Gulf Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "seychelles"
+    },
+    {
+      "name": "Splash Beach Resort",
+      "address": "17698 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "splash-beach-resort"
+    },
+    {
+      "name": "Sterling Breeze",
+      "address": "17101 Front Beach Rd, Panama City Beach, FL 32413",
+      "market": "pcb",
+      "slug": "sterling-breeze"
+    },
+    {
+      "name": "Sterling Reef",
+      "address": "12011 Front Beach Rd, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "sterling-reef"
+    },
+    {
+      "name": "Sugar Beach",
+      "address": "8727 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "sugar-beach"
+    },
+    {
+      "name": "Sugar Sands Beachfront Hotel",
+      "address": "20723 Front Beach Rd, Panama City Beach, FL 32413-3625",
+      "market": "pcb",
+      "slug": "sugar-sands-beachfront-hotel"
+    },
+    {
+      "name": "Summerhouse",
+      "address": "6505 Thomas Dr, Panama City, FL 32408",
+      "market": "pcb",
+      "slug": "summerhouse"
+    },
+    {
+      "name": "Summit Beach Resort",
+      "address": "8743 Thomas Dr mailbox 1514, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "summit-beach-resort"
+    },
+    {
+      "name": "Sunbird Condominium",
+      "address": "9840 S Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "sunbird-condominium"
+    },
+    {
+      "name": "Top of the Gulf",
+      "address": "8817 Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "top-of-the-gulf"
+    },
+    {
+      "name": "Treasure Island Resort",
+      "address": "5004 Thomas Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "treasure-island-resort"
+    },
+    {
+      "name": "Twin Palms",
+      "address": "10519 Front Beach Rd, Panama City Beach, FL 32407",
+      "market": "pcb",
+      "slug": "twin-palms"
+    },
+    {
+      "name": "Whispering Seas",
+      "address": "8610 Surf Dr, Panama City Beach, FL 32408",
+      "market": "pcb",
+      "slug": "whispering-seas"
+    }
+  ]

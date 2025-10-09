@@ -79,3 +79,16 @@
 .signature-carousel * {
   animation: none !important;
 }
+
+/* Premium booking tweaks */
+.kicker {
+  @apply block text-[11px] font-medium text-sky-600 mb-1;
+}
+.field {
+  @apply h-10 w-full rounded-xl border border-sky-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200;
+}
+
+/* container used throughout your codebase (already present on many pages) */
+.coastal-container {
+  @apply mx-auto max-w-6xl px-6;
+}

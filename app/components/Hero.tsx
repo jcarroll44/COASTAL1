@@ -1,36 +1,109 @@
-// components/Hero.tsx
+"use client";
+
 import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 
-export default function Hero({ image }: { image: string }) {
+type BaseProps = {
+  title?: string;
+  children?: React.ReactNode;
+};
+
+type HeroProps =
+  | (BaseProps & {
+      images: string[];
+      interval?: number;
+      poster?: never;
+      videoSrc?: never;
+    })
+  | (BaseProps & {
+      poster: string;
+      videoSrc?: string;
+      images?: never;
+      interval?: never;
+    });
+
+export default function Hero(props: HeroProps) {
+  const [allowMotion, setAllowMotion] = useState(false);
+  useEffect(() => {
+    const q = window.matchMedia("(prefers-reduced-motion: no-preference)");
+    setAllowMotion(q.matches);
+    const onChange = (e: MediaQueryListEvent) => setAllowMotion(e.matches);
+    q.addEventListener?.("change", onChange);
+    return () => q.removeEventListener?.("change", onChange);
+  }, []);
+
+  const isCarousel = "images" in props;
+
+  // Slightly shorter hero so the section below peeks through
+  const height = "h-[440px] md:h-[580px] lg:h-[660px]";
+
+  const imgs = isCarousel ? props.images.filter(Boolean) : [];
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (!isCarousel || imgs.length <= 1) return;
+    const ms = props.interval ?? 6000;
+    const t = setInterval(() => setIdx((n) => (n + 1) % imgs.length), ms);
+    return () => clearInterval(t);
+  }, [isCarousel, imgs.length, props.interval]);
+
+  const currentImage = useMemo(() => {
+    if (!isCarousel) return null;
+    if (!imgs.length) return null;
+    return imgs[idx] || imgs[0] || null;
+  }, [isCarousel, imgs, idx]);
+
   return (
-    <section className="relative coastal-container mt-6">
-      {/* Hero Image */}
-      <div className="relative overflow-hidden rounded-2xl shadow-lg">
-        <Image
-          src={image}
-          alt="Coastal hero"
-          width={1600}
-          height={900}
-          priority
-          className="w-full object-cover h-[420px] sm:h-[560px] md:h-[640px]"
-        />
-
-        {/* Selection Bar */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-[80%] md:w-[70%]">
-          <div className="flex gap-2 items-center rounded-full bg-white/95 backdrop-blur-md border border-sky-200 shadow-lg px-4 py-2">
-            <input
-              type="text"
-              placeholder="Enter your rental address or home name"
-              className="flex-1 h-11 rounded-full border border-sky-200 px-4 text-[14px] outline-none focus:ring-2 focus:ring-sky-300 bg-white"
+    <section className="relative isolate px-2 md:px-3 bg-white">
+      {/* square bottom (no rounding) */}
+      <div className={`relative ${height} overflow-hidden`}>
+        {/* Media */}
+        {isCarousel ? (
+          currentImage && (
+            <Image
+              src={currentImage}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover object-[center_40%]"
             />
-            <select className="h-11 rounded-full border border-sky-200 px-3 text-[14px] bg-white">
-              <option value="pcb">PCB</option>
-              <option value="30a">30A</option>
-            </select>
-            <button className="h-11 px-6 rounded-full bg-sky-900 text-white font-semibold hover:bg-sky-950 transition">
-              Open
-            </button>
-          </div>
+          )
+        ) : (
+          <>
+            {props.poster && (
+              <Image
+                src={props.poster}
+                alt=""
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-[center_40%]"
+              />
+            )}
+            {props.videoSrc && allowMotion && (
+              <video
+                className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
+                autoPlay
+                muted
+                loop
+                playsInline
+                poster={props.poster || undefined}
+              >
+                <source src={props.videoSrc} type="video/mp4" />
+              </video>
+            )}
+          </>
+        )}
+
+        {/* gradient for contrast */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/12 via-transparent to-black/10" />
+      </div>
+
+      {/* Booking bar overlay */}
+      <div className="pointer-events-none absolute inset-x-2 md:inset-x-3 bottom-8 md:bottom-10 z-10 flex w-auto justify-center">
+        <div className="pointer-events-auto w-full max-w-7xl">
+          {props.children}
         </div>
       </div>
     </section>

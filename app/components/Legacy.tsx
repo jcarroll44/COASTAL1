@@ -1,4 +1,3 @@
-// app/components/Legacy.tsx
 export default function Legacy() {
   return (
     <section className="mx-auto max-w-7xl px-5 md:px-8 py-14 md:py-20">
@@ -39,7 +38,7 @@ export default function Legacy() {
         {/* Right: Photo with caption bottom-right in cursive */}
         <figure className="relative">
           <img
-            src="/photo.jpg"
+            src="/vintage-beach-service@2x.jpg"
             alt="Coastal crew on the beach"
             className="w-full rounded-2xl border border-sky-100 shadow-[0_20px_60px_-30px_rgba(2,132,199,0.25)]"
           />

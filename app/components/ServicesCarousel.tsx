@@ -1,8 +1,8 @@
-// app/components/ServicesCarousel.tsx
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useEffect } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 type Item = {
   title: string;
@@ -12,173 +12,330 @@ type Item = {
   badge?: string;
 };
 
-export default function ServicesCarousel({ items }: { items: Item[] }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [cardW, setCardW] = useState(300);
-  const [index, setIndex] = useState(0);
-  const GAP = 24; // matches gap-6
+export default function ServicesCarousel({
+  items,
+  kicker = "Beach Essentials by Coastal",
+  title = "Signature Services – All in One Place.",
+}: {
+  items: Item[];
+  kicker?: string;
+  title?: string;
+}) {
+  const count = items.length;
 
-  // measure exactly 1/2/4-up
+  // If we ever only have 1 item, just show a simple card.
+  if (count <= 1) {
+    return (
+      <div className="rounded-3xl border border-sky-100 bg-gradient-to-b from-sky-50/80 via-white to-sky-50/70 p-6 md:p-8 shadow-[0_18px_60px_-35px_rgba(2,132,199,0.35)]">
+        <Header kicker={kicker} title={title} />
+        <div className="mt-4">
+          <Card item={items[0]} priority />
+        </div>
+      </div>
+    );
+  }
+
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const [asGrid, setAsGrid] = useState(false);
+  const [stepPx, setStepPx] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0); // 0..count-1
+
+  // We render 3 copies so the user always lives in the middle block.
+  const COPIES = 3;
+  const extendedItems = Array.from({ length: COPIES }, () => items).flat();
+  const baseOffset = count; // start-of-middle-block index (global index)
+
+  // Measure card width (step) & center on middle copy on first load.
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    if (count < 2) return;
+    const scroller = scrollerRef.current;
+    const firstMiddle = cardRefs.current[baseOffset];
+    const secondMiddle = cardRefs.current[baseOffset + 1];
+    if (!scroller || !firstMiddle || !secondMiddle) return;
 
-    const ro = new ResizeObserver(([entry]) => {
-      const w = entry.contentRect.width;
-      let cols = 1;
-      if (w >= 1024) cols = 4;
-      else if (w >= 768) cols = 2;
+    const step = secondMiddle.offsetLeft - firstMiddle.offsetLeft;
+    if (step <= 0) return;
 
-      const totalGap = GAP * (cols - 1);
-      const cw = Math.max(260, Math.floor((w - totalGap) / cols));
-      setCardW(cw);
+    setStepPx(step);
+    // Center on the first card of the middle copy
+    scroller.scrollLeft = baseOffset * step;
+    setCurrentIndex(0);
+  }, [count]);
+
+  // Scroll helpers
+  const scrollByStep = (dir: "next" | "prev") => {
+    const scroller = scrollerRef.current;
+    if (!scroller || stepPx === 0) return;
+    scroller.scrollBy({
+      left: dir === "next" ? stepPx : -stepPx,
+      behavior: "smooth",
     });
+  };
 
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+  const handlePrev = () => {
+    if (asGrid || count <= 1) return;
+    scrollByStep("prev");
+  };
 
-  const cols = useMemo(() => {
-    if (typeof window === "undefined") return 4;
-    const w = containerRef.current?.clientWidth ?? 1200;
-    if (w >= 1024) return 4;
-    if (w >= 768) return 2;
-    return 1;
-  }, [cardW]);
+  const handleNext = () => {
+    if (asGrid || count <= 1) return;
+    scrollByStep("next");
+  };
 
-  const maxIndex = Math.max(0, items.length - cols);
-  const nudge = (dir: 1 | -1) =>
-    setIndex((i) => Math.min(maxIndex, Math.max(0, i + dir)));
+  // Sync dots + handle infinite wrapping when the user scrolls (arrows or trackpad)
+  const handleScroll = () => {
+    const scroller = scrollerRef.current;
+    if (!scroller || stepPx === 0 || count <= 1) return;
+
+    const approxGlobalIndex = scroller.scrollLeft / stepPx;
+    let globalIndex = Math.round(approxGlobalIndex);
+
+    // Teleport if we drift too far left or right (into the outer copies)
+    const minGlobal = baseOffset - count; // left threshold
+    const maxGlobal = baseOffset + count; // right threshold
+
+    if (globalIndex <= minGlobal) {
+      // Moved too far left: jump one block to the right
+      scroller.scrollLeft += count * stepPx;
+      globalIndex += count;
+    } else if (globalIndex >= maxGlobal) {
+      // Moved too far right: jump one block to the left
+      scroller.scrollLeft -= count * stepPx;
+      globalIndex -= count;
+    }
+
+    // Map global index (in extended array) back to 0..count-1
+    const relative = ((globalIndex - baseOffset) % count + count) % count;
+    if (relative !== currentIndex) {
+      setCurrentIndex(relative);
+    }
+  };
+
+  // Jump to a specific *real* index from dots
+  const goToRealIndex = (target: number) => {
+    const scroller = scrollerRef.current;
+    if (!scroller || stepPx === 0 || count <= 1) return;
+    // Position in the middle copy
+    const globalTarget = baseOffset + target;
+    scroller.scrollTo({
+      left: globalTarget * stepPx,
+      behavior: "smooth",
+    });
+  };
 
   return (
-    <section className="relative py-10 md:py-12">
-      {/* Header */}
-      <div className="mb-6 md:mb-8 flex items-end justify-between">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.22em] text-sky-600">
-            Beach essentials by Coastal
-          </p>
-          <h2 className="mt-2 text-[22px] md:text-[28px] font-bold text-text-sky-600">
-            Signature Services - All in One Place.
-          </h2>
-        </div>
+    <div className="relative overflow-hidden rounded-3xl border border-sky-100 bg-gradient-to-b from-sky-50/80 via-white to-sky-50/70 p-6 md:p-8 shadow-[0_18px_60px_-35px_rgba(2,132,199,0.35)]">
+      <Header
+        kicker={kicker}
+        title={title}
+        asGrid={asGrid}
+        onToggleGrid={() => setAsGrid((v) => !v)}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        showArrows={!asGrid && count > 1}
+      />
 
-        <div className="hidden md:flex items-center gap-3">
-          <button
-            aria-label="Previous"
-            onClick={() => nudge(-1)}
-            className="rounded-full border border-sky-200 bg-white px-3 py-2 text-sky-800 hover:bg-sky-50 transition disabled:opacity-40"
-            disabled={index === 0}
-          >
-            ‹
-          </button>
-          <button
-            aria-label="Next"
-            onClick={() => nudge(1)}
-            className="rounded-full border border-sky-200 bg-white px-3 py-2 text-sky-800 hover:bg-sky-50 transition disabled:opacity-40"
-            disabled={index === maxIndex}
-          >
-            ›
-          </button>
-        </div>
-      </div>
-
-      {/* Wrapper: hide X only; allow Y to show so shadows/hover aren’t clipped */}
-      <div
-        ref={containerRef}
-        className="relative overflow-x-hidden overflow-y-visible"
-      >
-        {/* Small vertical padding avoids any optical clipping even without hover */}
-        <div
-          className="flex gap-6 py-1 transition-transform duration-500 ease-[cubic-bezier(.22,.61,.36,1)]"
-          style={{ transform: `translate3d(${-index * (cardW + GAP)}px,0,0)` }}
-        >
-          {items.map((it) => (
-            <Link
-              href={it.href}
-              key={it.title}
-              className={[
-                "group block shrink-0 rounded-2xl bg-white",
-                "ring-1 ring-slate-100",
-                "shadow-[0_8px_28px_rgba(2,132,199,0.12)]",
-                "transition-transform duration-300 ease-[cubic-bezier(.2,.7,.3,1)]",
-                "hover:-translate-y-[3px] hover:scale-[1.01]",
-                "hover:shadow-[0_16px_38px_rgba(2,132,199,0.18)]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-300",
-              ].join(" ")}
-              style={{ width: `${cardW}px` }}
-            >
-              {/* Fixed aspect image keeps all cards equal height */}
-              <div className="relative overflow-hidden rounded-t-2xl">
-                <div className="relative aspect-[16/10]">
-                  <img
-                    src={it.image}
-                    alt={it.title}
-                    className="absolute inset-0 h-full w-full object-cover"
-                    draggable={false}
-                  />
-                </div>
-
-                {it.badge && (
-                  <span className="absolute left-3 top-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-sky-700 ring-1 ring-slate-200 shadow-sm">
-                    {it.badge}
-                  </span>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="p-4">
-                <div className="text-[11px] tracking-[0.18em] text-slate-500 uppercase">
-                  Service
-                </div>
-                <h3 className="mt-1 text-[18px] md:text-[19px] font-semibold text-[#0a2b47]">
-                  {it.title}
-                </h3>
-                <p className="mt-2 text-[14px] leading-[1.7] text-slate-700/90">
-                  {it.blurb}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-sky-900">
-                  View details
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    className="transition-transform group-hover:translate-x-0.5"
-                  >
-                    <path
-                      d="M5 12h14M13 5l7 7-7 7"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </span>
-              </div>
-            </Link>
+      {/* GRID VIEW */}
+      {asGrid ? (
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {items.map((item, idx) => (
+            <Card key={idx} item={item} priority={idx < 4} />
           ))}
         </div>
+      ) : (
+        <>
+          {/* Edge fades for nicer scroll */}
+          <div className="pointer-events-none absolute inset-y-[120px] left-0 w-14 bg-gradient-to-r from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-y-[120px] right-0 w-14 bg-gradient-to-l from-white to-transparent" />
 
-        {/* Mobile arrows */}
-        <div className="md:hidden pointer-events-none absolute inset-y-0 left-0 right-0 flex items-center justify-between px-1">
-          <button
-            aria-label="Previous"
-            onClick={() => nudge(-1)}
-            className="pointer-events-auto rounded-full border border-sky-200 bg-white/95 px-3 py-2 text-sky-800 shadow-md disabled:opacity-40"
-            disabled={index === 0}
+          {/* Infinite scroll row */}
+          <div
+            ref={scrollerRef}
+            onScroll={handleScroll}
+            className="services-scroll mt-4 flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory px-5 [scrollbar-width:none] [-ms-overflow-style:none]"
           >
-            ‹
-          </button>
+            <style>{`
+              .services-scroll::-webkit-scrollbar { display: none; }
+            `}</style>
+
+            {extendedItems.map((item, idx) => (
+              <article
+                key={`${item.title}-${idx}`}
+                ref={(el) => {
+                  cardRefs.current[idx] = el;
+                }}
+                className="snap-start shrink-0 w-[85%] sm:w-[60%] md:w-[48%] lg:w-[24%]"
+              >
+                <Card item={item} priority={idx < 4} />
+              </article>
+            ))}
+
+            {/* spacer so last visible card isn't slammed into edge */}
+            <div className="shrink-0 w-[5%] sm:w-[8%] lg:w-[10%]" />
+          </div>
+
+          {/* Dots */}
+          <div className="mt-4 flex justify-center gap-2">
+            {items.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => goToRealIndex(i)}
+                className={`h-2 rounded-full transition-all ${
+                  i === currentIndex ? "w-6 bg-sky-600" : "w-2 bg-sky-200"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ---------- Header + Controls ---------- */
+
+function Header({
+  kicker,
+  title,
+  asGrid,
+  onToggleGrid,
+  onPrev,
+  onNext,
+  showArrows,
+}: {
+  kicker: string;
+  title: string;
+  asGrid?: boolean;
+  onToggleGrid?: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+  showArrows?: boolean;
+}) {
+  return (
+    <div className="mb-5 flex items-start justify-between gap-3 md:mb-6">
+      <div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-500">
+          {kicker}
+        </div>
+        <h2 className="text-xl font-semibold tracking-tight text-sky-900 md:text-2xl">
+          {title}
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Chairs, bonfires, boats and photos — the core services most guests
+          build their beach week around.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2 pt-1">
+        {onToggleGrid && (
           <button
-            aria-label="Next"
-            onClick={() => nudge(1)}
-            className="pointer-events-auto rounded-full border border-sky-200 bg-white/95 px-3 py-2 text-sky-800 shadow-md disabled:opacity-40"
-            disabled={index === maxIndex}
+            type="button"
+            onClick={onToggleGrid}
+            className="hidden sm:inline-flex items-center rounded-full border border-sky-200 bg-white px-3.5 py-1.5 text-xs font-medium text-sky-700 shadow-sm hover:bg-sky-50"
           >
-            ›
+            {asGrid ? "Carousel view" : "Grid view"}
           </button>
+        )}
+
+        {showArrows && onPrev && onNext && (
+          <>
+            <IconButton label="Previous" direction="prev" onClick={onPrev} />
+            <IconButton label="Next" direction="next" onClick={onNext} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function IconButton({
+  label,
+  direction,
+  onClick,
+}: {
+  label: string;
+  direction: "prev" | "next";
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-white text-sky-700 shadow-sm hover:bg-sky-50 transition"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path
+          d={
+            direction === "prev"
+              ? "M15 19l-7-7 7-7"
+              : "M9 5l7 7-7 7"
+          }
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
+/* ---------- Card ---------- */
+
+function Card({ item, priority }: { item: Item; priority?: boolean }) {
+  return (
+    <Link
+      href={item.href}
+      className="group block h-full overflow-hidden rounded-2xl border border-sky-100 bg-white ring-1 ring-transparent shadow-[0_10px_30px_-20px_rgba(2,132,199,0.25)] transition hover:ring-sky-200"
+    >
+      <div className="relative h-40 w-full sm:h-44 md:h-44 lg:h-44">
+        <Image
+          src={item.image}
+          alt={item.title}
+          fill
+          sizes="(max-width: 1024px) 50vw, 25vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          priority={priority}
+        />
+      </div>
+
+      <div className="flex h-[170px] flex-col justify-between px-4 py-3">
+        <div>
+          <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-500">
+            Service
+          </div>
+          <h3 className="line-clamp-1 text-base font-semibold text-sky-900">
+            {item.title}
+          </h3>
+          <p className="mt-1 line-clamp-2 text-sm text-sky-700/90">
+            {item.blurb}
+          </p>
+        </div>
+
+        <div className="mt-3 flex items-center gap-1 text-sm font-medium text-sky-700">
+          <span>View details</span>
+          <svg
+            className="transition group-hover:translate-x-0.5"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M9 5l7 7-7 7"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
       </div>
-    </section>
+    </Link>
   );
 }

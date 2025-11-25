@@ -2,11 +2,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import mapboxgl from "mapbox-gl";
+import mapboxgl, { Map, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { Home30A, Access30A } from "../lib/data";
 
-const MAP_STYLE = "mapbox://styles/mapbox/satellite-v9";
+type HomeLike = { name?: string; address?: string; lat?: number; lng?: number };
+type Access = { name: string; lat: number; lng: number };
+
+export const STYLE_ROAD = "mapbox://styles/mapbox/streets-v12";
+export const STYLE_SAT = "mapbox://styles/mapbox/satellite-streets-v12";
 
 function haversineMiles(
   a: { lat: number; lng: number },
@@ -25,27 +28,57 @@ function haversineMiles(
 export default function MapPanel30A({
   property,
   accesses,
+  height = 380,
+  styleUrl = STYLE_ROAD, // default: Map (streets)
+  forceAccess, // optional: manually chosen access from dropdown
 }: {
-  property: Home30A;
-  accesses: Access30A[];
+  property?: HomeLike | null;
+  accesses?: Access[];
+  height?: number;
+  styleUrl?: string;
+  forceAccess?: Access;
 }) {
-  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-  const mapEl = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<Map | null>(null);
+  const lastStyleRef = useRef<string | undefined>(undefined);
 
-  const coordsOk =
-    typeof property.lat === "number" &&
-    typeof property.lng === "number" &&
-    isFinite(property.lat!) &&
-    isFinite(property.lng!);
+  const homeMarkerRef = useRef<Marker | null>(null);
+  const accessMarkerRef = useRef<Marker | null>(null);
+
+  // --- Safe home coords + flags ---------------------------------------------
+
+  const hasHomeCoords =
+    typeof property?.lat === "number" &&
+    Number.isFinite(property.lat) &&
+    typeof property?.lng === "number" &&
+    Number.isFinite(property.lng);
+
+  // Default center if we don't have a home yet (rough 30A center)
+  const homeLat = hasHomeCoords ? (property!.lat as number) : 30.32;
+  const homeLng = hasHomeCoords ? (property!.lng as number) : -86.14;
+
+  const accessList = useMemo(
+    () =>
+      (Array.isArray(accesses) ? accesses : []).filter(
+        (a): a is Access =>
+          !!a &&
+          typeof a.name === "string" &&
+          Number.isFinite(a.lat) &&
+          Number.isFinite(a.lng)
+      ),
+    [accesses]
+  );
 
   const nearest = useMemo(() => {
-    if (!coordsOk || !accesses?.length) return null;
-    let best: Access30A | null = null;
+    if (!hasHomeCoords || accessList.length === 0) return null;
+
+    let best: Access | null = null;
     let bestD = Infinity;
-    for (const a of accesses) {
+
+    for (const a of accessList) {
       const d = haversineMiles(
-        { lat: property.lat!, lng: property.lng! },
+        { lat: homeLat, lng: homeLng },
         { lat: a.lat, lng: a.lng }
       );
       if (d < bestD) {
@@ -54,68 +87,62 @@ export default function MapPanel30A({
       }
     }
     return best;
-  }, [coordsOk, property.lat, property.lng, accesses]);
+  }, [hasHomeCoords, homeLat, homeLng, accessList]);
 
-  useEffect(() => {
-    if (!coordsOk || !nearest || !token || !mapEl.current) return;
+  const chosenAccess: Access | null = forceAccess ?? nearest;
 
-    mapboxgl.accessToken = token;
+  const distanceMiles =
+    hasHomeCoords && chosenAccess
+      ? Math.round(
+          (haversineMiles(
+            { lat: homeLat, lng: homeLng },
+            { lat: chosenAccess.lat, lng: chosenAccess.lng }
+          ) +
+            Number.EPSILON) *
+            10
+        ) / 10
+      : null;
 
-    const bounds = new mapboxgl.LngLatBounds();
-    bounds.extend([property.lng!, property.lat!]);
-    bounds.extend([nearest.lng, nearest.lat]);
+  async function drawRoute(
+    map: Map,
+    from: { lng: number; lat: number },
+    to: { lng: number; lat: number }
+  ) {
+    try {
+      const url = new URL(
+        `https://api.mapbox.com/directions/v5/mapbox/driving/${from.lng},${from.lat};${to.lng},${to.lat}`
+      );
+      url.searchParams.set("geometries", "geojson");
+      url.searchParams.set("overview", "full");
+      url.searchParams.set("access_token", token);
 
-    const map = new mapboxgl.Map({
-      container: mapEl.current,
-      style: MAP_STYLE,
-      center: [property.lng!, property.lat!],
-      zoom: 15,
-      attributionControl: false,
-    });
-    mapRef.current = map;
+      const res = await fetch(url.toString());
+      const json = await res.json();
+      const route = json?.routes?.[0]?.geometry ?? {
+        type: "LineString",
+        coordinates: [],
+      };
 
-    map.on("load", async () => {
-      map.fitBounds(bounds, { padding: 60, duration: 0 });
-
-      // markers
-      new mapboxgl.Marker({ color: "#0EA5E9" })
-        .setLngLat([property.lng!, property.lat!])
-        .setPopup(new mapboxgl.Popup().setText(property.name))
-        .addTo(map);
-
-      new mapboxgl.Marker({ color: "#1D4ED8" })
-        .setLngLat([nearest.lng, nearest.lat])
-        .setPopup(new mapboxgl.Popup().setText(nearest.name))
-        .addTo(map);
-
-      // directions
-      try {
-        const url = new URL(
-          `https://api.mapbox.com/directions/v5/mapbox/walking/${property.lng},${property.lat};${nearest.lng},${nearest.lat}`
-        );
-        url.searchParams.set("geometries", "geojson");
-        url.searchParams.set("access_token", token);
-
-        const res = await fetch(url.toString());
-        const data = await res.json();
-        const route = data?.routes?.[0]?.geometry ?? {
-          type: "LineString",
-          coordinates: [],
-        };
-
+      if (map.getSource("route")) {
+        (map.getSource("route") as any).setData({
+          type: "Feature",
+          geometry: route,
+          properties: {},
+        });
+      } else {
         map.addSource("route", {
           type: "geojson",
           data: { type: "Feature", geometry: route, properties: {} },
         });
 
         map.addLayer({
-          id: "route-outline",
+          id: "route-casing",
           type: "line",
           source: "route",
           paint: {
-            "line-color": "#ffffff",
+            "line-color": "#0ea5e9",
             "line-width": 8,
-            "line-opacity": 0.85,
+            "line-opacity": 0.25,
           },
           layout: { "line-join": "round", "line-cap": "round" },
         });
@@ -125,22 +152,162 @@ export default function MapPanel30A({
           type: "line",
           source: "route",
           paint: {
-            "line-color": "#0EA5E9",
+            "line-color": "#0369a1",
             "line-width": 4,
-            "line-opacity": 0.95,
+            "line-opacity": 0.9,
           },
           layout: { "line-join": "round", "line-cap": "round" },
         });
-      } catch {
-        // ignore fetch errors
+      }
+    } catch {
+      // ignore fetch errors
+    }
+  }
+
+  function addMarkers(map: Map, access: Access | null) {
+    // clear previous
+    if (homeMarkerRef.current) {
+      homeMarkerRef.current.remove();
+      homeMarkerRef.current = null;
+    }
+    if (accessMarkerRef.current) {
+      accessMarkerRef.current.remove();
+      accessMarkerRef.current = null;
+    }
+
+    if (hasHomeCoords) {
+      homeMarkerRef.current = new mapboxgl.Marker({ color: "#0EA5E9" })
+        .setLngLat([homeLng, homeLat])
+        .setPopup(
+          new mapboxgl.Popup().setText(property?.name ?? "Selected home")
+        )
+        .addTo(map);
+    }
+    if (access) {
+      accessMarkerRef.current = new mapboxgl.Marker({ color: "#1D4ED8" })
+        .setLngLat([access.lng, access.lat])
+        .setPopup(new mapboxgl.Popup().setText(access.name))
+        .addTo(map);
+    }
+  }
+
+  // init map (once)
+  useEffect(() => {
+    if (!token || !containerRef.current || mapRef.current) return;
+
+    mapboxgl.accessToken = token;
+
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style: styleUrl, // initial style
+      center: [homeLng, homeLat],
+      zoom: 11,
+      attributionControl: false,
+      cooperativeGestures: true,
+    });
+    mapRef.current = map;
+    lastStyleRef.current = styleUrl;
+
+    map.addControl(
+      new mapboxgl.NavigationControl({ showCompass: false }),
+      "bottom-right"
+    );
+    map.addControl(
+      new mapboxgl.AttributionControl({ compact: true }),
+      "bottom-right"
+    );
+
+    map.on("load", async () => {
+      if (hasHomeCoords && chosenAccess) {
+        const b = new mapboxgl.LngLatBounds();
+        b.extend([homeLng, homeLat]);
+        b.extend([chosenAccess.lng, chosenAccess.lat]);
+        map.fitBounds(b, { padding: 90, duration: 0 });
+        addMarkers(map, chosenAccess);
+        await drawRoute(
+          map,
+          { lng: homeLng, lat: homeLat },
+          { lng: chosenAccess.lng, lat: chosenAccess.lat }
+        );
       }
     });
 
     return () => {
       map.remove();
       mapRef.current = null;
+      homeMarkerRef.current = null;
+      accessMarkerRef.current = null;
     };
-  }, [coordsOk, nearest, token, property.lat, property.lng, property.name]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
-  return <div ref={mapEl} className="h-[260px] w-full" />;
+  // respond to style changes OR property/access changes
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const repaint = async () => {
+      map.resize();
+
+      if (hasHomeCoords && chosenAccess) {
+        const b = new mapboxgl.LngLatBounds();
+        b.extend([homeLng, homeLat]);
+        b.extend([chosenAccess.lng, chosenAccess.lat]);
+        map.fitBounds(b, { padding: 90, duration: 0 });
+
+        addMarkers(map, chosenAccess);
+        await drawRoute(
+          map,
+          { lng: homeLng, lat: homeLat },
+          { lng: chosenAccess.lng, lat: chosenAccess.lat }
+        );
+      } else {
+        // Clear route/markers if we no longer have data
+        if (map.getLayer("route-line")) map.removeLayer("route-line");
+        if (map.getLayer("route-casing")) map.removeLayer("route-casing");
+        if (map.getSource("route")) map.removeSource("route");
+        if (homeMarkerRef.current) {
+          homeMarkerRef.current.remove();
+          homeMarkerRef.current = null;
+        }
+        if (accessMarkerRef.current) {
+          accessMarkerRef.current.remove();
+          accessMarkerRef.current = null;
+        }
+      }
+    };
+
+    // If the requested style changed, swap style then repaint on style load.
+    if (lastStyleRef.current !== styleUrl) {
+      lastStyleRef.current = styleUrl;
+      map.setStyle(styleUrl);
+      map.once("styledata", repaint);
+    } else {
+      // Style didn't change → repaint immediately
+      repaint();
+    }
+  }, [
+    styleUrl,
+    hasHomeCoords,
+    homeLat,
+    homeLng,
+    chosenAccess?.lat,
+    chosenAccess?.lng,
+    chosenAccess?.name,
+  ]);
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-xl ring-1 ring-slate-200">
+      <div ref={containerRef} style={{ height }} className="w-full" />
+
+      {hasHomeCoords && chosenAccess && (
+        <div className="pointer-events-none absolute bottom-3 left-3 rounded-md bg-white/90 backdrop-blur px-3 py-2 text-[12px] text-slate-700 ring-1 ring-slate-200 shadow-sm">
+          <div className="font-semibold text-sky-900">{chosenAccess.name}</div>
+          {distanceMiles != null && (
+            <div className="text-slate-600">{distanceMiles} mi from home</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

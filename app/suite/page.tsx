@@ -1,4 +1,3 @@
-// app/suite/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -42,7 +41,7 @@ export default function SuiteLanding() {
         >
           <div className="relative aspect-[16/9]">
             <Image
-              src="/hero-30a.jpg"
+              src="/chairs30a.jpg"
               alt="30A / South Walton"
               fill
               className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"

@@ -1,4 +1,3 @@
-// app/suite/[market]/page.tsx
 import Link from "next/link";
 import properties from "@/data/properties.json";
 

@@ -1,0 +1,137 @@
+// /lib/commission.ts
+import fs from "node:fs";
+import path from "node:path";
+
+export type LineItem = {
+  amenity: string;
+  qty: number;
+  unitPrice: number;
+  total: number;
+  days?: number;
+};
+
+export type Order = {
+  id: string;
+  partnerId: string;
+  propertyId: string;
+  market: "30a" | "pcb" | string;
+  orderDate: string;
+  source: "suite" | "concierge" | "qr" | "site";
+  lineItems: LineItem[];
+  orderTotal: number;
+  status: "paid" | "pending" | "refunded";
+};
+
+export type Partner = {
+  id: string;
+  name: string;
+  market: string;
+  type: "pm" | "condo";
+  payout_percent?: number;
+};
+
+// this is our *affiliate* property record, separate from your existing properties.json
+export type AffiliateProperty = {
+  id: string;
+  externalId?: string;
+  partnerId: string;
+  market: string;
+  name: string;
+  address: string;
+  type: "home" | "condo_building";
+};
+
+type Rules = {
+  default_rate_percent: number;
+  exclusions: string[];
+  amenity_map: Record<string, string>;
+};
+
+function readJSON<T>(p: string): T {
+  const full = path.join(process.cwd(), p);
+  const raw = fs.readFileSync(full, "utf-8");
+  return JSON.parse(raw) as T;
+}
+
+export function loadPartners(): Partner[] {
+  return readJSON<Partner[]>("/data/partners.json");
+}
+export function loadAffiliateProperties(): AffiliateProperty[] {
+  return readJSON<AffiliateProperty[]>("/data/affiliate-properties.json");
+}
+export function loadOrders(): Order[] {
+  return readJSON<Order[]>("/data/orders.json");
+}
+export function loadRules(): Rules {
+  return readJSON<Rules>("/data/commission-rules.json");
+}
+
+export function amenityIsExcluded(amenity: string, rules: Rules): boolean {
+  const key = amenity.toLowerCase();
+  if (rules.exclusions.includes(key)) return true;
+  const family = rules.amenity_map[key] ?? key;
+  return rules.exclusions.includes(family);
+}
+
+export function computeEligible(order: Order, rules: Rules) {
+  let eligible = 0;
+  const breakdown: Record<string, number> = {};
+  for (const li of order.lineItems) {
+    const fam = rules.amenity_map[li.amenity.toLowerCase()] ?? li.amenity;
+    if (!amenityIsExcluded(li.amenity, rules)) {
+      eligible += li.total;
+      breakdown[fam] = (breakdown[fam] ?? 0) + li.total;
+    }
+  }
+  return { eligible, breakdown };
+}
+
+export function computeCommissionForOrder(order: Order, partner: Partner, rules: Rules) {
+  const { eligible, breakdown } = computeEligible(order, rules);
+  const rate = (partner.payout_percent ?? rules.default_rate_percent) / 100;
+  const commission = Math.round(eligible * rate * 100) / 100;
+  return { eligible, commission, rate, breakdown };
+}
+
+export function aggregateForPartner(partnerId: string) {
+  const partners = loadPartners();
+  const props = loadAffiliateProperties();
+  const orders = loadOrders().filter(o => o.partnerId === partnerId && o.status === "paid");
+  const rules = loadRules();
+  const partner = partners.find(p => p.id === partnerId);
+  if (!partner) throw new Error("Partner not found");
+
+  let gross = 0;
+  let eligible = 0;
+  let commission = 0;
+  const byAmenity: Record<string, number> = {};
+  const byProperty: Record<string, { property: AffiliateProperty; gross: number; eligible: number; commission: number }> = {};
+
+  for (const o of orders) {
+    gross += o.orderTotal;
+    const c = computeCommissionForOrder(o, partner, rules);
+    eligible += c.eligible;
+    commission += c.commission;
+    for (const [k, v] of Object.entries(c.breakdown)) {
+      byAmenity[k] = (byAmenity[k] ?? 0) + v;
+    }
+    const prop = props.find(p => p.id === o.propertyId)!;
+    const entry = (byProperty[o.propertyId] ??= { property: prop, gross: 0, eligible: 0, commission: 0 });
+    entry.gross += o.orderTotal;
+    entry.eligible += c.eligible;
+    entry.commission += c.commission;
+  }
+
+  return {
+    partner,
+    totals: {
+      orders: orders.length,
+      gross,
+      eligible,
+      commission
+    },
+    byAmenity,
+    byProperty,
+    orders
+  };
+}

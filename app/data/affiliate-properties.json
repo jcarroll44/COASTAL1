@@ -1,0 +1,28 @@
+[
+    {
+      "id": "bella-vita",                // must match (or map to) your internal id/slug
+      "externalId": "bella-vita",       // optional: map to existing data/properties.json id/slug
+      "partnerId": "30a-escapes",
+      "market": "30a",
+      "name": "Bella Vita",
+      "address": "64 Sandy Shores Ct, Santa Rosa Beach, FL 32459",
+      "type": "home"
+    },
+    {
+      "id": "seagrove-sands",
+      "externalId": "seagrove-sands",
+      "partnerId": "30a-escapes",
+      "market": "30a",
+      "name": "Seagrove Sands",
+      "address": "16 Bosk Ln, Santa Rosa Beach, FL 32459",
+      "type": "home"
+    },
+    {
+      "id": "aqua-vista-building",
+      "partnerId": "aqua-vista",
+      "market": "pcb",
+      "name": "Aqua Vista",
+      "address": "17155 Front Beach Rd, Panama City Beach, FL 32413",
+      "type": "condo_building"
+    }
+  ]

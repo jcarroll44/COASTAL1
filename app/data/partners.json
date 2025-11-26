@@ -1,0 +1,59 @@
+{
+    "partners": {
+      "coastal-public": {
+        "name": "Coastal (30A Public Accesses)",
+        "type": "public",
+        "market": "30a",
+        "active": true,
+        "commission": { "model": "none", "rate": 0 },
+        "contactEmails": ["ops@coastal.example"],
+        "notes": "Default partner for all 30A public beach access bookings."
+      },
+      "aqua-resort": {
+        "name": "Aqua Resort",
+        "type": "condo",
+        "market": "pcb",
+        "active": true,
+        "commission": { "model": "percentage", "rate": 0.18 },
+        "contactEmails": ["aqua@partner.example"],
+        "notes": "PCB condo partner. Orders route partnerId=propertyId=aqua-resort."
+      },
+      "calypso": {
+        "name": "Calypso Resort & Towers",
+        "type": "condo",
+        "market": "pcb",
+        "active": true,
+        "commission": { "model": "percentage", "rate": 0.18 },
+        "contactEmails": ["calypso@partner.example"],
+        "notes": "PCB condo partner."
+      },
+      "tidewater": {
+        "name": "Tidewater Beach Resort",
+        "type": "condo",
+        "market": "pcb",
+        "active": true,
+        "commission": { "model": "percentage", "rate": 0.18 },
+        "contactEmails": ["tidewater@partner.example"],
+        "notes": "PCB condo partner."
+      },
+      "sterling-reef": {
+        "name": "Sterling Reef",
+        "type": "condo",
+        "market": "pcb",
+        "active": true,
+        "commission": { "model": "percentage", "rate": 0.18 },
+        "contactEmails": ["sterlingreef@partner.example"],
+        "notes": "PCB condo partner."
+      },
+      "30a-escapes": {
+        "name": "30A Escapes",
+        "type": "pm",
+        "market": "30a",
+        "active": true,
+        "commission": { "model": "percentage", "rate": 0.15 },
+        "contactEmails": ["partners@30aescapes.example"],
+        "notes": "Property Management partner. Homes under this partner report revenue here."
+      }
+    },
+    "schemaVersion": 1
+  }

@@ -20,7 +20,7 @@ export const PCB_CONDOS: Condo[] = (raw as any[])
   }))
   .filter((c) => c.slug);
 
-// helpers (optional)
+// helpers
 export function isPcbCondo(slug: string) {
   const id = (slug || "").toLowerCase();
   return PCB_CONDOS.some((c) => c.slug === id);

@@ -1,3 +1,4 @@
+// app/[market]/[service]/page.tsx
 import { notFound } from "next/navigation";
 import ServiceBookingPage, {
   ServiceBookingConfig,

@@ -1,3 +1,4 @@
+// app/30a/beach-better-box/page.tsx
 "use client";
 
 import { lazy, Suspense, useState } from "react";

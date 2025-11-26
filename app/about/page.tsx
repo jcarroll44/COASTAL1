@@ -1,3 +1,4 @@
+// app/about/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -66,13 +67,15 @@ export default function AboutPage() {
                 Coastal began with a truck, a promise, and a handful of chairs.
                 Four decades later, we still greet at 9:00 AM, place every set
                 with intention, and keep a tidy footprint—so families can sink
-                straight into the moment. Our crews are local. Our standard never
-                drifts. And the experience feels quietly polished, never performative.
+                straight into the moment. Our crews are local. Our standard
+                never drifts. And the experience feels quietly polished, never
+                performative.
               </p>
               <p className="mt-4 text-[15px] leading-relaxed text-slate-700">
                 We serve Panama City Beach and 30A with one approach: consistent
                 craft. Permits handled. Weather watched. Transparent pricing.
-                Service that blends into the day—yet you feel it in every detail.
+                Service that blends into the day—yet you feel it in every
+                detail.
               </p>
 
               {/* subtle proof pills */}
@@ -109,7 +112,8 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <p className="mt-2 text-[13px] text-slate-700">
-                  Clean lines, aligned edges, and a friendly hello—always on time.
+                  Clean lines, aligned edges, and a friendly hello—always on
+                  time.
                 </p>
               </div>
 
@@ -122,8 +126,8 @@ export default function AboutPage() {
                   </div>
                 </div>
                 <p className="mt-2 text-[13px] text-slate-700">
-                  The kind of service that fades into the background—yet elevates
-                  the whole day.
+                  The kind of service that fades into the background—yet
+                  elevates the whole day.
                 </p>
               </div>
 
@@ -170,8 +174,8 @@ export default function AboutPage() {
                 Consistent setups across 30A and Panama City Beach.
               </li>
               <li className="flex gap-3">
-                <Icon d="M12 2a10 10 0 100 20 10 10 0 000-20z" />
-                A single standard—from the first hello to 5:00 PM takedown.
+                <Icon d="M12 2a10 10 0 100 20 10 10 0 000-20z" />A single
+                standard—from the first hello to 5:00 PM takedown.
               </li>
             </ul>
           </div>
@@ -183,12 +187,15 @@ export default function AboutPage() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white to-sky-50/80" />
         <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-16">
           <div className="mb-6 text-center">
-            <div className="text-sm font-semibold text-sky-900">Plan in minutes</div>
+            <div className="text-sm font-semibold text-sky-900">
+              Plan in minutes
+            </div>
             <h3 className="mt-1 text-2xl font-extrabold tracking-tight">
               Build your week on the Emerald Coast
             </h3>
             <p className="mt-2 text-[15px] text-slate-700">
-              Choose your market, pick dates, add the essentials. We handle the rest.
+              Choose your market, pick dates, add the essentials. We handle the
+              rest.
             </p>
           </div>
 
@@ -258,7 +265,9 @@ export default function AboutPage() {
         <div className="rounded-2xl bg-sky-50/70 p-6 shadow-sm ring-1 ring-sky-100 md:p-8">
           <div className="grid items-center gap-6 md:grid-cols-[1fr_auto]">
             <div>
-              <div className="text-sm font-semibold text-sky-900">Concierge</div>
+              <div className="text-sm font-semibold text-sky-900">
+                Concierge
+              </div>
               <p className="mt-1 text-[15px] text-slate-700">
                 Questions, special requests, or large groups? We’ll arrange it.
               </p>

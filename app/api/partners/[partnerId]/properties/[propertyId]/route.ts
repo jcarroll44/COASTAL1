@@ -1,4 +1,4 @@
-/ app/aip / partners / [partnerId] / properties / [propertyId] / route.ts;
+// app/api/partners/[partnerId]/properties/[propertyId]/route.ts
 export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";

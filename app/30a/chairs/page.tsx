@@ -1,3 +1,4 @@
+// app/30a/chairs/page.tsx
 "use client";
 
 import { lazy, Suspense, useState } from "react";

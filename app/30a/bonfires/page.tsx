@@ -1,3 +1,4 @@
+// app/30a/bonfires/page.tsx
 "use client";
 
 import ServiceBookingPage, { Service } from "@/components/ServiceBookingPage";

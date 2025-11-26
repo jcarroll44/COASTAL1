@@ -1,4 +1,4 @@
-/ app/api/flags/swfd/route.ts
+// app/api/flags/swfd/route.ts
 import { NextResponse } from "next/server";
 import { htmlToText, normalizePrimary, toStatus } from "../_util";
 

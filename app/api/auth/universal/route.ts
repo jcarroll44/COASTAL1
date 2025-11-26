@@ -1,6 +1,6 @@
 // app/api/auth/universal/route.ts
 import { NextResponse } from "next/server";
-import { PCB_CONDOS, getCondo } from "../../../lib/pcbCondos";
+import { PCB_CONDOS, getCondo } from "@/lib/pcbCondos";
 
 type Session =
   | { sub: string; role: "superadmin" }

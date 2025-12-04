@@ -13,7 +13,7 @@ export default function PCBBananaBoatPage() {
         { text: "Quick rides with lots of laughs" },
       ]}
       ctaText="See Locations & Times"
-      gallery={["/cards/banana.jpg", "/cards/jetski.jpg"]}
+      gallery={["/cards/banana.jpg", "/cards/jetski1.png"]}
     >
       <p className="text-sky-800">
         Meet at your tower, gear up with the crew, and head out for a fun,

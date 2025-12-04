@@ -6,7 +6,7 @@ import { Accordion30A as Accordion } from "@/components/BookingAccordion";
 const svc: Service = {
   title: "PCB Jet Skis",
   blurb: "On-the-beach departures with pro operators.",
-  hero: "/cards/jetski.jpg",
+  hero: "/cards/jetski1.png",
   scope: "pcb",
   quantityLabel: "skis",
   askDate: true,

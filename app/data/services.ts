@@ -69,7 +69,7 @@ export const SERVICES: ServiceDef[] = [
     slug: "jetskis",
     title: "Jet Skis",
     description: "Thrill rides on the emerald water.",
-    image: "/cards/jetski.jpg",
+    image: "/cards/jetski1.png",
     packages: [
       { name: "30 minutes", price: 65 },
       { name: "1 hour", price: 120 },

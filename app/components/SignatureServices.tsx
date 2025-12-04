@@ -30,7 +30,7 @@ const CARDS: Card[] = [
   },
   {
     href: "/pcb/watersports?type=jet-skis",
-    image: "/cards/jetski.jpg", // add this image to /public/cards/
+    image: "/cards/jetski1.png", // add this image to /public/cards/
     label: "Watersports",
     title: "Jet Skis",
     blurb: "Ride the emerald water with hourly and half-day rentals.",

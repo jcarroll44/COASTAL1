@@ -310,10 +310,8 @@ function AmenitySuitePromo_Light() {
 export default function Page() {
   return (
     <main className="min-h-screen bg-white">
-      {" "}
-      {/* <— bg-white fixes the grey line */}
       {/* HERO — panel centered on left third */}
-      <section className="relative isolate">
+      <section className="relative isolate mb-0 pb-0">
         <div className="relative h-[66vh] min-h-[640px] w-full overflow-hidden">
           <Image
             src="/hero13.jpg"
@@ -322,7 +320,6 @@ export default function Page() {
             className="object-cover scale-[1.10] translate-y-[-40px]"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-sky-950/35 via-sky-900/0 to-transparent" />
         </div>
 
         {/* Center-left form inside hero */}
@@ -334,6 +331,7 @@ export default function Page() {
           </div>
         </div>
       </section>
+
       {/* HOMEPAGE-MATCHED CAROUSEL */}
       <section
         id="signature-services"

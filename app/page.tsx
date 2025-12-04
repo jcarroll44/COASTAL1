@@ -83,7 +83,7 @@ function BeachCamsBrand() {
     {
       name: "Chateau Beachfront Hotel",
       href: "/beach-cams/chateau-hotel",
-      img: "/beach-cams/chateau-cam.png",
+      img: "/beach-cams/chateau-cam.jpg.png",
     },
     {
       name: "Embassy Suites PCB",
@@ -178,20 +178,20 @@ export default function HomePage() {
       title: "Chairs & Umbrellas",
       blurb: "Daily setup & takedown—placed with care.",
       badge: "Signature Service",
-      image: "/cards/chairs-30a.jpg",
+      image: "/cards/chairs-day.jpg",
       href: "/pcb/chairs",
     },
     {
       title: "Beach Bonfires",
       blurb: "Permits, fire, seating, & s’mores handled.",
       badge: "Signature Service",
-      image: "/cards/bonfire.jpg",
+      image: "/beach-bonfires2.jpg",
       href: "/pcb/bonfires",
     },
     {
       title: "Jet Skis",
       blurb: "Thrill rides on the emerald water.",
-      image: "/cards/jetski.jpg",
+      image: "/cards/jetski1.png",
       href: "/pcb/jetskis",
     },
     {
@@ -231,7 +231,7 @@ export default function HomePage() {
       {/* HERO with concierge booking bar overlay */}
       <section className="relative">
         <Hero
-          images={["/hero13.jpg", "/chairs30a.jpg", "/bonfire.jpg"]}
+          images={["/hero(1).jpg", "/chairs30a.jpg", "/hero.jpg"]}
           interval={6000}
           scale={0.98} // <— dial the "zoom" (1 = none, 0.95 = show more, 1.05 = tighter)
         >

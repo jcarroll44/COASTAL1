@@ -18,7 +18,7 @@ export default function PCBWatersportsPage() {
     >
       {/* Compact, clean grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <Card href="/pcb/jetskis" title="Jet Skis" img="/cards/jetski.jpg" />
+        <Card href="/pcb/jetskis" title="Jet Skis" img="/cards/jetski1.png" />
         <Card href="/pcb/parasail" title="Parasail" img="/cards/parasail.jpg" />
         <Card
           href="/pcb/banana-boat"

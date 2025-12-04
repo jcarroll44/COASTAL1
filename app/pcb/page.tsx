@@ -12,7 +12,7 @@ const servicesItems = [
   {
     title: "Chairs & Umbrellas",
     blurb: "Daily setup & takedown—placed with care.",
-    image: "/cards/chairs-day.jpg",
+    image: "/cards/pcb-chairs1.jpg",
     href: "/pcb/chairs",
   },
   {
@@ -24,7 +24,7 @@ const servicesItems = [
   {
     title: "Jet Skis",
     blurb: "Thrill rides on the emerald water.",
-    image: "/cards/jetski.jpg",
+    image: "/cards/jetski1.png",
     href: "/pcb/jetskis",
   },
   {
@@ -237,18 +237,19 @@ export default function PCBHomePage() {
     <main className="mx-auto max-w-[120rem]">
       {/* HERO */}
       <section className="relative isolate">
-        <div className="relative h-[66vh] min-h-[640px] w-full overflow-hidden">
+        <div className="relative h-[75vh] min-h-[700px] w-full overflow-hidden">
           <Image
             src="/hero16.jpg"
             alt="Panama City Beach — Coastal"
             fill
-            className="object-cover [object-position:center_90%]"
+            className="object-cover translate-y-[-32px]"
             priority
             unoptimized
           />
-          <div className="absolute inset-0 bg-[radial-gradient(1200px_600px_at_85%_85%,rgba(56,189,248,0.15),transparent_60%)]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-sky-950/35 via-sky-900/0 to-transparent" />
+
+          {/* Removed ALL gradient overlays */}
         </div>
+
         <div className="pointer-events-none absolute inset-0">
           <div className="mx-auto flex h-full max-w-7xl items-center justify-end px-6 md:px-10">
             <div className="pointer-events-auto w-full md:w-1/3">
@@ -264,14 +265,6 @@ export default function PCBHomePage() {
         className="mx-auto max-w-7xl px-5 md:px-8 mt-14 md:mt-16"
       >
         {/* Tight, clean heading */}
-        <div className="mb-3">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
-            Beach Essentials — All in One Place
-          </div>
-          <h2 className="mt-1 text-[26px] md:text-[30px] font-semibold tracking-tight text-sky-900">
-            Signature Services
-          </h2>
-        </div>
         <ServicesCarousel items={servicesItems} />
       </section>
 

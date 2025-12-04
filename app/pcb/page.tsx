@@ -44,7 +44,7 @@ const BEACH_CAMS = [
   {
     name: "Chateau Beachfront Hotel",
     href: "/beach-cams/chateau-hotel",
-    img: "/beach-cams/chateau-cam.png",
+    img: "/beach-cams/chateau-cam.jpg.png",
   },
   {
     name: "Embassy Suites PCB",
@@ -239,7 +239,7 @@ export default function PCBHomePage() {
       <section className="relative isolate">
         <div className="relative h-[66vh] min-h-[640px] w-full overflow-hidden">
           <Image
-            src="/pcbhero2.jpg"
+            src="/hero16.jpg"
             alt="Panama City Beach — Coastal"
             fill
             className="object-cover [object-position:center_90%]"
@@ -357,7 +357,7 @@ export default function PCBHomePage() {
             <div className="relative">
               <div className="relative h-80 md:h-[26rem] w-full overflow-hidden rounded-3xl border border-[#cfe0ea] bg-white shadow-[0_22px_70px_-30px_rgba(0,93,156,0.25)]">
                 <Image
-                  src="/cards/pcb-staff.jpg"
+                  src="/pcb-staff1.jpg"
                   alt="Panama City Beach crew"
                   fill
                   className="object-cover"

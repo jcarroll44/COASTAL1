@@ -214,7 +214,7 @@ const servicesItems = [
   {
     title: "Beach Bonfires",
     blurb: "Permits, fire, seating, s’mores, and more!",
-    image: "/bonfire3.jpg",
+    image: "/beach-bonfires2.jpg",
     href: "/30a/bonfires",
   },
   {
@@ -309,31 +309,31 @@ function AmenitySuitePromo_Light() {
 ────────────────────────────────────────────────────────── */
 export default function Page() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-white">
+      {" "}
+      {/* <— bg-white fixes the grey line */}
       {/* HERO — panel centered on left third */}
       <section className="relative isolate">
         <div className="relative h-[66vh] min-h-[640px] w-full overflow-hidden">
           <Image
-            src="/chairs30a.jpg"
+            src="/hero13.jpg"
             alt="30A / South Walton — Coastal"
             fill
-            className="object-cover"
+            className="object-cover scale-[1.10] translate-y-[-40px]"
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-sky-950/35 via-sky-900/0 to-transparent" />
         </div>
 
-        {/* New placement: center-left in the hero */}
+        {/* Center-left form inside hero */}
         <div className="pointer-events-none absolute inset-0">
           <div className="mx-auto flex h-full max-w-7xl items-center px-5 md:px-8">
-            {/* Left third column */}
             <div className="pointer-events-auto w-full md:w-1/3">
               <Search30A_Vertical showLogo />
             </div>
           </div>
         </div>
       </section>
-
       {/* HOMEPAGE-MATCHED CAROUSEL */}
       <section
         id="signature-services"
@@ -341,7 +341,6 @@ export default function Page() {
       >
         <ServicesCarousel items={servicesItems} />
       </section>
-
       {/* MAP */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 pt-8 md:pt-10 mb-8 md:mb-12">
         <ThirtyAHomeMap
@@ -352,10 +351,8 @@ export default function Page() {
           height={520}
         />
       </section>
-
       {/* LIGHT PROMO CARD (enhanced) */}
       <AmenitySuitePromo_Light />
-
       {/* Live Beach Cams (30A) */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 mt-24 mb-28">
         <div className="mb-5">

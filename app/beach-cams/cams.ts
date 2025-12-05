@@ -137,7 +137,7 @@ export const CAMS: CamConfig[] = [
     market: "PCB",
     provider: "external",
     externalHref: "https://www.bythesearesorts.com/beach-cams",
-    poster: "/beach-cams/chateau-cam.png",
+    poster: "/beach-cams/chateau-cam.jpg.png",
     contract: true,
     bookingHref: "/pcb/chairs?property=chateau",
     bookingLabel: "Book Chairs at Chateau",

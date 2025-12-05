@@ -903,7 +903,7 @@ export default function PCBAmenitySuitePage() {
             >
               <div className="relative aspect-[16/10] w-full">
                 <Image
-                  src="/bonfire.jpg"
+                  src="/beach-bonfires2.jpg"
                   alt="Beach Bonfire"
                   fill
                   className="object-cover"
@@ -933,7 +933,7 @@ export default function PCBAmenitySuitePage() {
             >
               <div className="relative aspect-[16/10] w-full">
                 <Image
-                  src="/cards/paddleboard.jpg"
+                  src="/cards/paddle1.jpg"
                   alt="Paddleboard"
                   fill
                   className="object-cover"
@@ -954,7 +954,7 @@ export default function PCBAmenitySuitePage() {
             >
               <div className="relative aspect-[16/10] w-full">
                 <Image
-                  src="/cards/photo.jpg"
+                  src="/cards/photography2.png"
                   alt="Family Photography"
                   fill
                   className="object-cover"

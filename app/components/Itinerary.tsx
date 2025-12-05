@@ -8,7 +8,7 @@ type CartItem = {
   title: string;
   market: "pcb" | "30a";
   qty: number;
-  price: number; // unit price (already includes per-order add-ons)
+  price: number;
   meta?: Record<string, any>;
 };
 
@@ -29,7 +29,6 @@ export function ItineraryProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = (i: CartItem) =>
     setItems((prev) => {
-      // merge same line if id matches
       const idx = prev.findIndex((p) => p.id === i.id);
       if (idx >= 0) {
         const next = [...prev];
@@ -70,7 +69,6 @@ function Drawer() {
   const total = items.reduce((s, i) => s + i.qty * i.price, 0);
 
   function onContinue() {
-    // Minimal payload → Checkout
     const payload = {
       items: items.map((i) => ({
         title: i.title,
@@ -80,7 +78,6 @@ function Drawer() {
         meta: i.meta || {},
       })),
       total,
-      // Helpful denormalizations (optional)
       chairSets:
         items
           .filter((i) => /chairs/i.test(i.title))
@@ -89,9 +86,24 @@ function Drawer() {
       endDate: items.find((i) => i.meta?.endDate)?.meta?.endDate || null,
       condo: items.find((i) => i.meta?.location)?.meta?.location || "",
     };
+
     sessionStorage.setItem("coastal.checkout", JSON.stringify(payload));
     setOpen(false);
     router.push("/checkout");
+  }
+
+  function onSave() {
+    localStorage.setItem("coastal.saved.itinerary", JSON.stringify(items));
+    alert("Saved to your device ✔️");
+  }
+
+  function onSend() {
+    const text = encodeURIComponent(
+      `Here's my Coastal itinerary:\n${items
+        .map((i) => `${i.qty}× ${i.title} — $${i.price}`)
+        .join("\n")}\n\nTotal: $${total}`
+    );
+    window.location.href = `sms:?&body=${text}`;
   }
 
   return (
@@ -100,7 +112,7 @@ function Drawer() {
         open ? "translate-x-0" : "translate-x-full"
       }`}
     >
-      {/* header */}
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-sky-100 p-4">
         <div className="text-lg font-semibold text-sky-900">Your Itinerary</div>
         <button
@@ -111,8 +123,8 @@ function Drawer() {
         </button>
       </div>
 
-      {/* items */}
-      <div className="h-[calc(100vh-190px)] overflow-y-auto p-4">
+      {/* Items */}
+      <div className="h-[calc(100vh-220px)] overflow-y-auto p-4">
         {!items.length ? (
           <div className="text-sky-600">Your cart is empty.</div>
         ) : (
@@ -131,6 +143,7 @@ function Drawer() {
                     <div className="mt-1 text-sm text-sky-700">
                       Qty: {i.qty} @ ${i.price.toFixed(2)}
                     </div>
+
                     {i.meta?.location && (
                       <div className="mt-0.5 text-xs text-sky-600">
                         {i.meta.location}
@@ -142,6 +155,7 @@ function Drawer() {
                       </div>
                     )}
                   </div>
+
                   <button
                     className="text-sm text-sky-600 hover:text-sky-800"
                     onClick={() => removeItem(i.id)}
@@ -155,12 +169,13 @@ function Drawer() {
         )}
       </div>
 
-      {/* footer */}
-      <div className="border-t border-sky-100 p-4">
-        <div className="mb-3 flex items-center justify-between text-sky-900">
+      {/* Footer */}
+      <div className="border-t border-sky-100 p-4 space-y-2">
+        <div className="flex items-center justify-between text-sky-900">
           <span className="font-medium">Total</span>
           <span className="text-lg font-semibold">${total.toFixed(2)}</span>
         </div>
+
         <button
           disabled={!items.length}
           onClick={onContinue}
@@ -168,9 +183,27 @@ function Drawer() {
         >
           Continue
         </button>
+
+        {/* NEW BUTTONS */}
+        <div className="flex gap-2">
+          <button
+            onClick={onSave}
+            className="flex-1 rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
+          >
+            Save
+          </button>
+
+          <button
+            onClick={onSend}
+            className="flex-1 rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
+          >
+            Send
+          </button>
+        </div>
+
         <button
           onClick={clear}
-          className="mt-2 w-full rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
+          className="w-full rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
         >
           Clear
         </button>

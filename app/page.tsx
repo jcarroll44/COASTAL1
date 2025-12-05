@@ -231,7 +231,7 @@ export default function HomePage() {
       {/* HERO with concierge booking bar overlay */}
       <section className="relative">
         <Hero
-          images={["/hero(1).jpg", "/chairs30a.jpg", "/hero.jpg"]}
+          images={["/hero3.jpg", "/chairs30a.jpg", "/hero.jpg"]}
           interval={6000}
           scale={0.98} // <— dial the "zoom" (1 = none, 0.95 = show more, 1.05 = tighter)
         >

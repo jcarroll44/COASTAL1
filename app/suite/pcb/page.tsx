@@ -7,7 +7,6 @@ import Image from "next/image";
 import condos from "../../data/condos.json";
 import AmenityPackages from "@/components/AmenityPackages";
 import SuiteContextSync from "../../components/SuiteContextSync";
-import WeekTimeline from "@/components/WeekTimeline";
 
 /* ======================= Types ======================= */
 type Condo = {
@@ -74,7 +73,7 @@ function weekdayLabel(isoDate: string) {
   }
 }
 
-/* ======================= Persistent storage helpers ======================= */
+/* ======================= STORAGE ======================= */
 const STORAGE_KEY = "coastal.selectedCondo";
 
 function persistCondo(c: any | null) {
@@ -83,6 +82,7 @@ function persistCondo(c: any | null) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(c));
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(c));
     } else {
+      localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem(STORAGE_KEY);
       sessionStorage.removeItem(STORAGE_KEY);
     }
@@ -101,7 +101,7 @@ function readPersistedCondo(): any | null {
   return null;
 }
 
-/* ======================= CSV for modal condo list ======================= */
+/* ======================= CSV LOADER ======================= */
 async function fetchCondosCSV(path = "/condos_pcb.csv"): Promise<string[]> {
   const res = await fetch(path, { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to load condos CSV");
@@ -114,7 +114,7 @@ async function fetchCondosCSV(path = "/condos_pcb.csv"): Promise<string[]> {
     .filter((v, i, a) => a.indexOf(v) === i);
 }
 
-/* ======================= Amenity Modal (pop-ups) ======================= */
+/* ======================= Amenity Modal ======================= */
 function AmenityModal({
   open,
   amenity,
@@ -426,7 +426,6 @@ export default function PCBAmenitySuitePage() {
   const searchParams = useSearchParams();
   const condoSlugParam = (searchParams.get("condo") || "").toLowerCase();
 
-  // Only PCB condos
   const PCB_CONDOS = useMemo(
     () =>
       (condos as Condo[])
@@ -435,16 +434,15 @@ export default function PCBAmenitySuitePage() {
     []
   );
 
-  /* Condo selection (persistent + change button) */
+  /* Condo selection */
   const [query, setQuery] = useState("");
   const [selectedCondo, setSelectedCondo] = useState<Condo | null>(null);
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Hydrate in this priority: URL ?condo=  -> localStorage/session
   useEffect(() => {
-    // 1) URL match
+    // 1) URL ?condo=
     if (condoSlugParam) {
       const m =
         PCB_CONDOS.find((c) => c.slug.toLowerCase() === condoSlugParam) ||
@@ -456,6 +454,7 @@ export default function PCBAmenitySuitePage() {
         return;
       }
     }
+
     // 2) Persisted
     const persisted = readPersistedCondo();
     if (persisted?.slug) {
@@ -487,15 +486,6 @@ export default function PCBAmenitySuitePage() {
     return () => window.removeEventListener("storage", onStorage);
   }, [PCB_CONDOS]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return PCB_CONDOS.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q)
-    ).sort((a, b) => a.name.localeCompare(b.name));
-  }, [query, PCB_CONDOS]);
-
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
       if (!wrapperRef.current) return;
@@ -510,6 +500,15 @@ export default function PCBAmenitySuitePage() {
     };
   }, []);
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return PCB_CONDOS.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) || c.address.toLowerCase().includes(q)
+    ).sort((a, b) => a.name.localeCompare(b.name));
+  }, [query, PCB_CONDOS]);
+
   function handleSelectCondo(c: Condo) {
     setSelectedCondo(c);
     setQuery(c.name);
@@ -517,19 +516,11 @@ export default function PCBAmenitySuitePage() {
     setOpen(false);
   }
 
-  function handleChangeCondo() {
-    // Clear persistence and return to search state focused + open
-    persistCondo(null);
-    setSelectedCondo(null);
-    setOpen(true);
-    // little delay to ensure input is in DOM then focus
-    setTimeout(() => inputRef.current?.focus(), 0);
-  }
-
-  /* Chairs & itinerary */
+  /* Beach Chairs + Itinerary State */
   const [chairSets, setChairSets] = useState(1);
   const [todayISO, setTodayISO] = useState<string | null>(null);
   useEffect(() => setTodayISO(toISODate(new Date())), []);
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const days = useMemo(
@@ -553,6 +544,47 @@ export default function PCBAmenitySuitePage() {
     (bonfireDay ? PRICES.bonfire : 0) +
     (photoDay ? PRICES.photo : 0);
 
+  /* SAVE itinerary (bookmark) */
+  function handleSave() {
+    const payload = {
+      condo: selectedCondo?.name ?? query,
+      chairSets,
+      startDate,
+      endDate,
+      bonfireDay,
+      bonfireDate,
+      bonfireTime,
+      photoDay,
+      photoDate,
+      photoTime,
+      subtotal,
+    };
+    localStorage.setItem("coastal.itinerary.saved", JSON.stringify(payload));
+    alert("Itinerary saved. You can return to it anytime.");
+  }
+
+  /* SEND itinerary (native share sheet on iPhone) */
+  async function handleSend() {
+    const shareData = {
+      title: "My Coastal Itinerary",
+      text: "Here is my Coastal beach plan — check it out!",
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        console.log("Share canceled", err);
+      }
+    }
+
+    // Fallback: copy link
+    await navigator.clipboard.writeText(window.location.href);
+    alert("Link copied!");
+  }
+
   function handleCheckout() {
     const payload = {
       condo: selectedCondo?.name ?? query,
@@ -571,10 +603,10 @@ export default function PCBAmenitySuitePage() {
     window.location.href = "/checkout";
   }
 
-  // Packages / individual toggle
+  /* Toggle */
   const [view, setView] = useState<"packages" | "individual">("packages");
 
-  // Popups
+  /* Amenity popup config */
   const AMENITIES: AmenityConfig[] = [
     {
       id: "bonfire",
@@ -595,6 +627,7 @@ export default function PCBAmenitySuitePage() {
     { id: "parasail", name: "Parasail", priceHint: "$75 • person" },
     { id: "banana_boat", name: "Banana Boat", priceHint: "$25 • rider" },
   ];
+
   const [activeAmenity, setActiveAmenity] = useState<AmenityConfig | null>(
     null
   );
@@ -606,6 +639,7 @@ export default function PCBAmenitySuitePage() {
     setActiveAmenity(a);
     setModalOpen(true);
   }
+
   function submitAmenity(payload: AddedItem) {
     if (payload.amenity === "bonfire") {
       const w = weekdayLabel(payload.date);
@@ -622,24 +656,25 @@ export default function PCBAmenitySuitePage() {
 
   return (
     <main className="mx-auto max-w-7xl px-5 md:px-8 py-8">
-      {/* ───────── Header ───────── */}
+      {/* HEADER */}
       {!selectedCondo ? (
         <div className="rounded-2xl border border-sky-100 bg-white shadow-[0_14px_40px_-24px_rgba(2,132,199,0.25)] p-5">
           <h1 className="mb-3 text-2xl md:text-3xl font-bold text-sky-900 tracking-tight">
             Panama City Beach Amenity Suite
           </h1>
+
           <div ref={wrapperRef} className="relative">
             <input
               ref={inputRef}
               type="text"
               value={query}
+              placeholder="Enter your condo name or address…"
               onChange={(e) => {
                 const v = e.target.value.replace(/^\s+/, "");
                 setQuery(v);
                 setOpen(v.length >= 1);
               }}
               onFocus={() => query.length >= 1 && setOpen(true)}
-              placeholder="Enter your condo name or address…"
               className="w-full rounded-lg border border-sky-200 bg-white/85 px-4 py-2 text-sm shadow-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
             />
             {open && filtered.length > 0 && (
@@ -671,13 +706,20 @@ export default function PCBAmenitySuitePage() {
               <p className="text-sm text-sky-700 truncate">
                 {selectedCondo.address}
               </p>
+
               <button
-                onClick={handleChangeCondo}
+                onClick={() => {
+                  persistCondo(null);
+                  setSelectedCondo(null);
+                  setOpen(true);
+                  setTimeout(() => inputRef.current?.focus(), 0);
+                }}
                 className="mt-3 inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-3 py-1.5 text-sm font-medium text-sky-700 hover:bg-sky-100"
               >
                 Change condo
               </button>
             </div>
+
             <div className="shrink-0">
               <Image
                 src={selectedCondo.logo ?? `/logos/${selectedCondo.slug}.png`}
@@ -693,11 +735,12 @@ export default function PCBAmenitySuitePage() {
         </div>
       )}
 
-      {/* ───────── Toggle ABOVE the card ───────── */}
+      {/* TOGGLE */}
       <div className="mt-4 mb-3 flex items-center gap-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700">
           Amenity Planning
-        </div>
+        </span>
+
         <div className="ml-auto inline-flex rounded-full bg-sky-50 p-1 ring-1 ring-sky-100">
           <button
             className={`rounded-full px-3 py-1.5 text-sm font-medium ${
@@ -709,6 +752,7 @@ export default function PCBAmenitySuitePage() {
           >
             Packages
           </button>
+
           <button
             className={`rounded-full px-3 py-1.5 text-sm font-medium ${
               view === "individual"
@@ -722,51 +766,36 @@ export default function PCBAmenitySuitePage() {
         </div>
       </div>
 
-      {/* ───────── View swap ───────── */}
+      {/* MAIN VIEW */}
       {view === "packages" ? (
         <AmenityPackages market="pcb" className="mb-8" />
       ) : (
         <>
-          {/* ───────── Main row: Chairs + Itinerary (side by side) ───────── */}
+          {/* ROW: CHAIRS + ITINERARY */}
           <section className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] items-start">
-            {/* Left: Beach Chairs & Umbrellas (unchanged card) */}
-            <div className="rounded-2xl border border-sky-100 bg-white shadow-[0_22px_70px_-30px_rgba(9,30,66,0.12)] overflow-hidden">
-              <div className="h-[10px] bg-sky-100" />
-              <div className="px-6 pt-5 pb-3">
-                <div className="flex items-end justify-between gap-4">
-                  <h2 className="text-[28px] md:text-[32px] font-black leading-tight tracking-tight text-sky-950">
+            {/* CHAIRS CARD — HERO (stacked with big image) */}
+            <div className="rounded-[32px] border border-sky-100 bg-white shadow-[0_24px_80px_-40px_rgba(15,23,42,0.55)] px-6 pt-5 pb-6 md:px-8">
+              {/* Header: title + chips + quantity */}
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-[26px] md:text-[30px] font-black leading-tight tracking-tight text-sky-950">
                     Beach Chairs &amp; Umbrellas
                   </h2>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-[12px] text-sky-900">
-                    $55/day • $300/week{" "}
-                    <span className="mx-1 text-sky-400">•</span> per set
-                  </span>
-                  <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-2.5 py-1 text-[12px] text-sky-700">
-                    1 set = 2 chairs + 1 umbrella
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1.15fr)_1px_minmax(0,1fr)]">
-                <div className="relative h-64 md:h-72 lg:h-80 p-3 pr-0">
-                  <div className="relative h-full w-full rounded-xl overflow-hidden border border-sky-100">
-                    <Image
-                      src="/cards/pcb-chairs1.jpg"
-                      alt="Chairs & umbrellas on Panama City Beach"
-                      fill
-                      className="object-cover"
-                      priority
-                      unoptimized
-                    />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-[12px] font-medium text-sky-900">
+                      1 set = 2 chairs + 1 umbrella
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-sky-200 bg-white px-3 py-1 text-[12px] text-sky-700">
+                      $55/day • $300/week per set
+                    </span>
                   </div>
                 </div>
-                <div className="hidden md:block border-l border-white" />
-                <div className="p-5 md:p-7">
-                  <label className="text-xs font-semibold text-sky-900 block">
-                    Quantity (sets)
-                  </label>
-                  <div className="mt-2 inline-flex items-center rounded-full border border-sky-200 bg-white shadow-sm">
+
+                <div className="flex flex-col items-end gap-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sky-600">
+                    Sets
+                  </span>
+                  <div className="inline-flex items-center rounded-full border border-sky-200 bg-white shadow-sm">
                     <button
                       onClick={() => setChairSets(Math.max(1, chairSets - 1))}
                       className="px-3 py-2 text-sky-700 hover:bg-sky-50"
@@ -774,7 +803,7 @@ export default function PCBAmenitySuitePage() {
                     >
                       −
                     </button>
-                    <div className="px-4 text-base font-semibold text-sky-900">
+                    <div className="px-4 text-base font-semibold text-sky-900 min-w-[2rem] text-center">
                       {chairSets}
                     </div>
                     <button
@@ -785,81 +814,89 @@ export default function PCBAmenitySuitePage() {
                       +
                     </button>
                   </div>
-                  <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <label className="flex flex-col">
-                      <span className="text-xs font-semibold text-sky-900">
-                        Start date
-                      </span>
-                      <input
-                        type="date"
-                        min={todayISO ?? undefined}
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="mt-1 h-10 w-full rounded-lg border border-sky-200 bg-white px-3 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-colors"
-                        suppressHydrationWarning
-                      />
-                    </label>
-                    <label className="flex flex-col">
-                      <span className="text-xs font-semibold text-sky-900">
-                        End date
-                      </span>
-                      <input
-                        type="date"
-                        min={(startDate || todayISO) ?? undefined}
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="mt-1 h-10 w-full rounded-lg border border-sky-200 bg-white px-3 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-colors"
-                        suppressHydrationWarning
-                      />
-                    </label>
-                  </div>
-                  <div className="mt-6 rounded-xl border border-sky-100 bg-white p-4 shadow-[0_10px_30px_-20px_rgba(2,132,199,0.25)]">
-                    <div className="flex items-center justify-between text-sky-900">
-                      <span className="text-[15px] font-semibold">
-                        Chairs total
-                      </span>
-                      <span className="text-[18px] font-extrabold">
-                        ${chairsSubtotal}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-sky-600">
-                      $55/day per set, capped at $300/week.
-                    </p>
-                    <button
-                      className="mt-4 w-full rounded-xl bg-[#0170BF] px-4 py-2.5 text-white text-sm font-semibold shadow hover:bg-[#0269b3] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-sky-200"
-                      onClick={handleCheckout}
-                      disabled={chairSets < 1 || !startDate || !endDate}
-                    >
-                      Add to itinerary
-                    </button>
+                </div>
+              </div>
+
+              {/* Dates row */}
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="flex flex-col">
+                  <span className="text-xs font-semibold text-sky-900">
+                    Start date
+                  </span>
+                  <input
+                    type="date"
+                    min={todayISO ?? undefined}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-sky-200 bg-white px-3 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-colors"
+                  />
+                </label>
+
+                <label className="flex flex-col">
+                  <span className="text-xs font-semibold text-sky-900">
+                    End date
+                  </span>
+                  <input
+                    type="date"
+                    min={(startDate || todayISO) ?? undefined}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="mt-1 h-10 w-full rounded-lg border border-sky-200 bg-white px-3 text-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-colors"
+                  />
+                </label>
+              </div>
+
+              {/* Big image */}
+              <div className="mt-5">
+                <div className="relative h-64 md:h-72 lg:h-80 rounded-[24px] overflow-hidden border border-sky-100">
+                  <Image
+                    src="/cards/pcb-chairs1.jpg"
+                    alt="Chairs & umbrellas set up on Panama City Beach"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-sky-50/95 px-3 py-1 text-[11px] font-medium text-sky-900 shadow-sm border border-sky-100">
+                    <span className="mr-1.5 h-4 w-4 rounded-md bg-sky-200" />
+                    Beach Chairs &amp; Umbrellas
                   </div>
                 </div>
               </div>
+
+              {/* Compact summary (auto feeds itinerary) */}
+              <div className="mt-4 flex items-center justify-between text-sky-900">
+                <div className="flex flex-col">
+                  <span className="text-[14px] font-semibold">
+                    Chairs total
+                  </span>
+                  <p className="text-[11px] text-sky-600">
+                    $55/day per set, capped at $300/week.
+                  </p>
+                  {startDate && endDate && (
+                    <p className="mt-0.5 text-[11px] text-sky-600">
+                      {days} {days === 1 ? "day" : "days"} • {chairSets}{" "}
+                      {chairSets === 1 ? "set" : "sets"}
+                    </p>
+                  )}
+                </div>
+                <span className="text-[18px] md:text-[20px] font-black">
+                  ${chairsSubtotal}
+                </span>
+              </div>
             </div>
 
-            {/* Right: Itinerary + Week timeline */}
-            <aside className="rounded-2xl border border-sky-100 bg-white shadow-[0_22px_70px_-30px_rgba(9,30,66,0.12)] p-5">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-700 mb-3">
-                Your week at a glance
-              </div>
-              <WeekTimeline
-                startDate={startDate}
-                endDate={endDate}
-                chairSets={chairSets}
-                bonfireDate={bonfireDate}
-                bonfireTime={bonfireTime}
-                photoDate={photoDate}
-                photoTime={photoTime}
-              />
-
-              <h3 className="mt-5 text-sm font-semibold text-sky-900">
+            {/* ITINERARY CARD (with Save + Send below) */}
+            <aside className="rounded-2xl border border-sky-100 bg-white shadow-[0_22px_70px_-30px_rgba(9,30,66,0.12)] p-6">
+              <h3 className="text-sm font-semibold text-sky-900">
                 Your itinerary
               </h3>
-              <dl className="mt-2 space-y-1.5 text-sky-800 text-xs sm:text-sm">
+
+              <dl className="mt-3 space-y-1.5 text-sky-800 text-xs sm:text-sm">
                 <div className="flex justify-between gap-4">
                   <dt>Chair sets</dt>
                   <dd className="font-medium">{chairSets}</dd>
                 </div>
+
                 <div className="flex justify-between gap-4">
                   <dt>Dates</dt>
                   <dd className="font-medium">
@@ -867,31 +904,51 @@ export default function PCBAmenitySuitePage() {
                     → {endDate ? new Date(endDate).toLocaleDateString() : "—"}
                   </dd>
                 </div>
+
                 <div className="flex justify-between gap-4">
                   <dt>Bonfire</dt>
                   <dd className="font-medium">
                     {bonfireDay ?? "Not scheduled"}
                   </dd>
                 </div>
+
                 <div className="flex justify-between gap-4">
                   <dt>Family Photography</dt>
                   <dd className="font-medium">{photoDay ?? "Not scheduled"}</dd>
                 </div>
               </dl>
 
-              <div className="mt-4 border-t border-sky-100 pt-3 space-y-1 text-sky-900">
-                <div className="flex justify-between text-sm">
+              <div className="mt-5 border-t border-sky-100 pt-3">
+                <div className="flex justify-between text-sm text-sky-900">
                   <span>Total</span>
                   <span className="font-semibold">${subtotal}</span>
                 </div>
               </div>
+
               <button
-                className="mt-4 w-full rounded-xl bg-[#0170BF] px-5 py-3 text-sm sm:text-base text-white font-semibold shadow hover:bg-[#0269b3] disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                className="mt-4 w-full rounded-xl bg-[#0170BF] px-5 py-3 text-sm sm:text-base text-white font-semibold shadow hover:bg-[#0269b3] disabled:opacity-60"
+                disabled={!startDate || !endDate || chairSets < 1}
                 onClick={handleCheckout}
-                disabled={chairSets < 1 || !startDate || !endDate}
               >
                 Review & Checkout
               </button>
+
+              {/* Save / Send block */}
+              <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3 flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleSave}
+                  className="flex-1 rounded-xl border border-sky-200 bg-white px-4 py-2.5 text-sm font-semibold text-sky-800 shadow-sm hover:bg-sky-100"
+                >
+                  Save itinerary
+                </button>
+
+                <button
+                  onClick={handleSend}
+                  className="flex-1 rounded-xl bg-[#0170BF] px-4 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#0269b3]"
+                >
+                  Send / Share
+                </button>
+              </div>
             </aside>
           </section>
 
@@ -994,7 +1051,7 @@ export default function PCBAmenitySuitePage() {
               >
                 <div className="relative aspect-[16/10] w-full">
                   <Image
-                    src="/cards/jetski1.png"
+                    src="/cards/jetski.jpg"
                     alt="Jet Ski Rentals"
                     fill
                     className="object-cover"

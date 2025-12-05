@@ -312,12 +312,12 @@ export default function Page() {
     <main className="min-h-screen bg-white">
       {/* HERO — panel centered on left third */}
       <section className="relative isolate mb-0 pb-0">
-        <div className="relative h-[66vh] min-h-[640px] w-full overflow-hidden">
+        <div className="relative h-[50vh] min-h-[640px] w-full overflow-hidden">
           <Image
             src="/hero13.jpg"
             alt="30A / South Walton — Coastal"
             fill
-            className="object-cover scale-[1.10] translate-y-[-40px]"
+            className="object-cover object-bottom scale-[1.10] translate-y-[70px]"
             priority
           />
         </div>

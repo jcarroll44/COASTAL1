@@ -1,213 +1,189 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { format } from "date-fns";
+import { Dialog } from "@headlessui/react";
 
-type CartItem = {
-  id: string;
-  title: string;
-  market: "pcb" | "30a";
-  qty: number;
-  price: number;
-  meta?: Record<string, any>;
+type DayBooking = {
+  date: Date;
+  chairs?: number;
+  bonfire?: boolean;
+  photography?: boolean;
 };
 
-type Ctx = {
-  items: CartItem[];
-  addItem: (i: CartItem) => void;
-  removeItem: (id: string) => void;
-  clear: () => void;
-  open: boolean;
-  setOpen: (b: boolean) => void;
+type ItineraryProps = {
+  week: DayBooking[];
+  subtotal: number;
 };
 
-const ItineraryContext = createContext<Ctx | null>(null);
-
-export function ItineraryProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  const addItem = (i: CartItem) =>
-    setItems((prev) => {
-      const idx = prev.findIndex((p) => p.id === i.id);
-      if (idx >= 0) {
-        const next = [...prev];
-        next[idx] = { ...prev[idx], qty: prev[idx].qty + i.qty };
-        return next;
-      }
-      return [...prev, i];
-    });
-
-  const removeItem = (id: string) =>
-    setItems((prev) => prev.filter((p) => p.id !== id));
-
-  const clear = () => setItems([]);
-
-  const value = useMemo<Ctx>(
-    () => ({ items, addItem, removeItem, clear, open, setOpen }),
-    [items, open]
-  );
+export default function Itinerary({ week, subtotal }: ItineraryProps) {
+  const [openShare, setOpenShare] = useState(false);
+  const [openSave, setOpenSave] = useState(false);
 
   return (
-    <ItineraryContext.Provider value={value}>
-      {children}
-      <Drawer />
-    </ItineraryContext.Provider>
-  );
-}
+    <aside className="rounded-3xl border border-sky-100 bg-white p-5 shadow-md sticky top-4">
+      {/* Title */}
+      <h2 className="text-xl font-bold text-sky-900 mb-4">Your Itinerary</h2>
 
-export function useItinerary() {
-  const ctx = useContext(ItineraryContext);
-  if (!ctx)
-    throw new Error("useItinerary must be used within ItineraryProvider");
-  return ctx;
-}
+      {/* DAYS */}
+      <div className="space-y-3">
+        {week.map((d, i) => (
+          <div
+            key={i}
+            className="rounded-xl border border-sky-100 bg-sky-50/40 p-3"
+          >
+            <div className="font-semibold text-sky-900">
+              {format(d.date, "EEE, MMM d")}
+            </div>
 
-function Drawer() {
-  const router = useRouter();
-  const { items, removeItem, clear, open, setOpen } = useItinerary();
-  const total = items.reduce((s, i) => s + i.qty * i.price, 0);
+            <ul className="mt-1 text-sm text-sky-800 space-y-1">
+              {d.chairs ? (
+                <li>🪑 {d.chairs} Beach Chair Set{d.chairs > 1 ? "s" : ""}</li>
+              ) : null}
+              {d.bonfire ? <li>🔥 Bonfire</li> : null}
+              {d.photography ? <li>📸 Photography Session</li> : null}
 
-  function onContinue() {
-    const payload = {
-      items: items.map((i) => ({
-        title: i.title,
-        qty: i.qty,
-        unitPrice: i.price,
-        market: i.market,
-        meta: i.meta || {},
-      })),
-      total,
-      chairSets:
-        items
-          .filter((i) => /chairs/i.test(i.title))
-          .reduce((s, i) => s + i.qty, 0) || 0,
-      startDate: items.find((i) => i.meta?.startDate)?.meta?.startDate || null,
-      endDate: items.find((i) => i.meta?.endDate)?.meta?.endDate || null,
-      condo: items.find((i) => i.meta?.location)?.meta?.location || "",
-    };
-
-    sessionStorage.setItem("coastal.checkout", JSON.stringify(payload));
-    setOpen(false);
-    router.push("/checkout");
-  }
-
-  function onSave() {
-    localStorage.setItem("coastal.saved.itinerary", JSON.stringify(items));
-    alert("Saved to your device ✔️");
-  }
-
-  function onSend() {
-    const text = encodeURIComponent(
-      `Here's my Coastal itinerary:\n${items
-        .map((i) => `${i.qty}× ${i.title} — $${i.price}`)
-        .join("\n")}\n\nTotal: $${total}`
-    );
-    window.location.href = `sms:?&body=${text}`;
-  }
-
-  return (
-    <div
-      className={`fixed inset-y-0 right-0 z-[2000] w-[92vw] max-w-md transform bg-white shadow-2xl ring-1 ring-sky-100 transition-transform ${
-        open ? "translate-x-0" : "translate-x-full"
-      }`}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-sky-100 p-4">
-        <div className="text-lg font-semibold text-sky-900">Your Itinerary</div>
-        <button
-          className="rounded-md px-3 py-1 text-sky-700 hover:bg-sky-50"
-          onClick={() => setOpen(false)}
-        >
-          Close
-        </button>
-      </div>
-
-      {/* Items */}
-      <div className="h-[calc(100vh-220px)] overflow-y-auto p-4">
-        {!items.length ? (
-          <div className="text-sky-600">Your cart is empty.</div>
-        ) : (
-          <div className="space-y-3">
-            {items.map((i) => (
-              <div
-                key={i.id}
-                className="rounded-lg border border-sky-100 p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="font-medium text-sky-900">{i.title}</div>
-                    <div className="text-sm text-sky-700">
-                      {i.market.toUpperCase()}
-                    </div>
-                    <div className="mt-1 text-sm text-sky-700">
-                      Qty: {i.qty} @ ${i.price.toFixed(2)}
-                    </div>
-
-                    {i.meta?.location && (
-                      <div className="mt-0.5 text-xs text-sky-600">
-                        {i.meta.location}
-                      </div>
-                    )}
-                    {i.meta?.startDate && i.meta?.endDate && (
-                      <div className="mt-0.5 text-xs text-sky-600">
-                        {i.meta.startDate} → {i.meta.endDate}
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    className="text-sm text-sky-600 hover:text-sky-800"
-                    onClick={() => removeItem(i.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
+              {!d.chairs && !d.bonfire && !d.photography ? (
+                <li className="text-sky-600 italic">No bookings</li>
+              ) : null}
+            </ul>
           </div>
-        )}
+        ))}
       </div>
 
-      {/* Footer */}
-      <div className="border-t border-sky-100 p-4 space-y-2">
-        <div className="flex items-center justify-between text-sky-900">
-          <span className="font-medium">Total</span>
-          <span className="text-lg font-semibold">${total.toFixed(2)}</span>
+      {/* Subtotal */}
+      <div className="border-t border-sky-100 mt-6 pt-4">
+        <div className="flex justify-between text-lg font-semibold text-sky-900">
+          <span>Subtotal</span>
+          <span>${subtotal}</span>
         </div>
 
-        <button
-          disabled={!items.length}
-          onClick={onContinue}
-          className="w-full rounded-lg bg-sky-700 px-4 py-3 font-semibold text-white hover:bg-sky-800 disabled:opacity-60"
-        >
-          Continue
-        </button>
-
-        {/* NEW BUTTONS */}
-        <div className="flex gap-2">
-          <button
-            onClick={onSave}
-            className="flex-1 rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
-          >
-            Save
-          </button>
-
-          <button
-            onClick={onSend}
-            className="flex-1 rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
-          >
-            Send
-          </button>
-        </div>
-
-        <button
-          onClick={clear}
-          className="w-full rounded-lg border border-sky-200 px-4 py-2 text-sky-800 hover:bg-sky-50"
-        >
-          Clear
+        <button className="mt-4 w-full rounded-xl bg-sky-800 py-3 text-white font-semibold hover:brightness-95 transition">
+          Continue to Checkout
         </button>
       </div>
-    </div>
+
+      {/* Save + Send Row */}
+      <div className="mt-6 flex items-center justify-center gap-3 pt-4 border-t border-sky-100">
+        <button
+          onClick={() => setOpenSave(true)}
+          className="px-4 py-2 rounded-xl border border-sky-300 text-sky-800 font-medium bg-white hover:bg-sky-50 transition"
+        >
+          Save
+        </button>
+
+        <button
+          onClick={() => setOpenShare(true)}
+          className="px-4 py-2 rounded-xl border border-sky-300 text-sky-800 font-medium bg-white hover:bg-sky-50 transition"
+        >
+          Send
+        </button>
+      </div>
+
+      {/* --- SEND MODAL --- */}
+      <Dialog
+        open={openShare}
+        onClose={() => setOpenShare(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <Dialog.Title className="text-lg font-semibold text-sky-900">
+              Share Your Itinerary
+            </Dialog.Title>
+
+            <p className="mt-2 text-sm text-sky-700">
+              Send your week plan to friends, family, or your group chat.
+            </p>
+
+            <div className="mt-4 space-y-3">
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: "Coastal Beach Service",
+                      text: "Here’s our trip itinerary.",
+                      url: window.location.href,
+                    });
+                  }
+                }}
+                className="w-full py-2 rounded-xl bg-sky-800 text-white font-semibold hover:brightness-95"
+              >
+                Share via Device
+              </button>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert("Link copied!");
+                }}
+                className="w-full py-2 rounded-xl border border-sky-300 text-sky-800 font-medium hover:bg-sky-50"
+              >
+                Copy Link
+              </button>
+            </div>
+
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => setOpenShare(false)}
+                className="text-sky-700 font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* --- SAVE MODAL --- */}
+      <Dialog
+        open={openSave}
+        onClose={() => setOpenSave(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <Dialog.Title className="text-lg font-semibold text-sky-900">
+              Save to Your Phone
+            </Dialog.Title>
+
+            <p className="mt-2 text-sm text-sky-700">
+              Add Coastal Access to your home screen for fast access to:
+            </p>
+
+            <ul className="mt-3 text-sm text-sky-800 space-y-1">
+              <li>• Beach Flags</li>
+              <li>• Weather</li>
+              <li>• Beach Cams</li>
+              <li>• Your itinerary</li>
+            </ul>
+
+            <div className="mt-4 bg-sky-50 border border-sky-200 rounded-xl p-3">
+              <p className="text-sm text-sky-800">
+                On iPhone: Tap the <strong>Share</strong> icon →{" "}
+                <strong>Add to Home Screen</strong>.
+              </p>
+              <p className="text-sm text-sky-800 mt-2">
+                On Android: Tap the menu (⋮) →{" "}
+                <strong>Add to Home Screen</strong>.
+              </p>
+            </div>
+
+            <div className="mt-4 text-right">
+              <button
+                onClick={() => setOpenSave(false)}
+                className="text-sky-700 font-medium"
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+    </aside>
   );
 }

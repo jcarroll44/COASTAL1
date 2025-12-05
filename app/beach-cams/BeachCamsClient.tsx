@@ -60,8 +60,8 @@ export default function BeachCamsClient() {
             <img
               src={
                 market === "30A"
-                  ? "/beach-cams/hero-30a.jpg"
-                  : "/beach-cams/hero-pcb.jpg"
+                  ? "/beach-cams/seagrove-cam.jpg"
+                  : "/beach-cams/pineapple-cam.jpg"
               }
               alt={
                 market === "30A"

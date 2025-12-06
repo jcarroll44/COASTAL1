@@ -104,19 +104,20 @@ function Search30A_Vertical({ showLogo = true }: { showLogo?: boolean }) {
       "
       style={{ width: "min(420px, 92vw)" }}
     >
-      <div className="mb-2 flex items-center gap-2">
-        {showLogo && (
-          <img
-            src="/coastal-logo.png"
-            alt=""
-            className="h-7 w-7 rounded-full ring-1 ring-sky-100"
-            onError={(e) => (e.currentTarget.style.display = "none")}
-          />
-        )}
-        <div className="text-[18px] font-bold tracking-wide text-sky-800/80">
-          Coastal Beach Company
-        </div>
-      </div>
+   <div className="mb-2 flex items-center gap-2">
+  {showLogo && (
+    <img
+      src="/coastal-logo.png"
+      alt=""
+      className="h-7 w-7 rounded-full ring-1 ring-sky-100"
+      onError={(e) => (e.currentTarget.style.display = "none")}
+    />
+  )}
+
+  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700/80">
+    Coastal Beach Company · 30A
+  </div>
+</div>
 
       <label className="mb-1 block text-[12px] font-semibold text-slate-600">
         Market

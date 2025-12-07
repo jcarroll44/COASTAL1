@@ -394,7 +394,7 @@ ${selectedProperty ? "bg-sky-50/80" : "bg-white/95 backdrop-blur-xl"}`}
                       Beach Chairs & Umbrellas
                     </div>
                     <img
-                      src="/cards/chairs-day.jpg"
+                      src="/cards/30A-Chairs(AS).jpg"
                       alt="Beach Chairs & Umbrellas"
                       className="h-[380px] w-full object-cover"
                     />

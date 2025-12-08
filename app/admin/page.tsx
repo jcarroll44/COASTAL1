@@ -7,13 +7,13 @@ export default function AdminPage() {
     {
       id: "30a-escapes",
       name: "30A Escapes",
-      logo: "/30a-escapes1.png",
+      logo: "/logos/30a-escapes1.png",
       href: "/partners/30a-escapes/properties", // ✅ fixed route
     },
     {
       id: "pcb-condos",
       name: "PCB Condos",
-      logo: "/pcb-condos1.png",
+      logo: "/logos/pcb-condos1.png",
       href: "/admin/pcb-condos",
     },
   ];

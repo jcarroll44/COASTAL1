@@ -81,10 +81,10 @@ export default function ThirtyADashboard() {
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-4">
           <Image
-            src="/30a-escapes1.png"
+            src="/logos/30a-escapes1.png"
             alt="30A Escapes"
-            width={48}
-            height={48}
+            width={150}
+            height={150}
             className="rounded-lg object-contain"
           />
           <h1 className="text-2xl md:text-3xl font-bold text-brand">

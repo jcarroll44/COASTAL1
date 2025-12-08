@@ -8,7 +8,7 @@ import PcbExtras from "../PcbExtras";
 const svc: Service = {
   title: "PCB Beach Bonfires",
   blurb: "Permits, setup, seating, and s’mores — handled by our crew.",
-  hero: "/bonfire1.jpg",
+  hero: "/beach-bonfires2.jpg",
   scope: "pcb",
   quantityLabel: "bonfire(s)",
   askDate: true,

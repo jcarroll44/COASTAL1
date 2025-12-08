@@ -23,7 +23,7 @@ const partnerConfig: Record<
 > = {
   "30a-escapes": {
     name: "30A Escapes",
-    logo: "/30a-escapes1.png",
+    logo: "/logos/30a-escapes1.png",
     commissionRate: 0.2,
   },
 };

@@ -3,8 +3,127 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ServicesCarousel from "@/components/ServicesCarousel";
 import ThirtyAHomeMap from "@/components/ThirtyAHomeMap";
+
+/* ──────────────────────────────────────────────────────────
+   Public Beach Access list (from CoastalAccess.json)
+────────────────────────────────────────────────────────── */
+const COASTAL_ACCESSES: { name: string; slug: string }[] = [
+  {
+    name: "Blue Mountain Beach Regional Access",
+    slug: "blue-mountain-beach",
+  },
+  {
+    name: "Dogwood-Thyme Access",
+    slug: "dogwood-thyme",
+  },
+  {
+    name: "Dune Allen Regional Beach Access",
+    slug: "dune-allen",
+  },
+  {
+    name: "Ed Walline Regional Beach Access",
+    slug: "ed-walline",
+  },
+  {
+    name: "Fort Panic and West Allen Loop Beach Access",
+    slug: "ft-panic",
+  },
+  {
+    name: "Grayton Dunes Public Beach Access",
+    slug: "grayton-dunes",
+  },
+  {
+    name: "Greenwood Beach Access",
+    slug: "greenwood-andalusia-dothan",
+  },
+  {
+    name: "Andalusia Beach Access",
+    slug: "andalusia",
+  },
+  {
+    name: "Dothan Beach Access",
+    slug: "dothan",
+  },
+  {
+    name: "Headland Beach Access",
+    slug: "headland",
+  },
+  {
+    name: "Scenic Gulf Regional Beach Access",
+    slug: "scenic-gulf",
+  },
+  {
+    name: "Gulfview Heights Regional Beach Access",
+    slug: "gulfview-heights",
+  },
+  {
+    name: "Holly Beach Access",
+    slug: "holly",
+  },
+  {
+    name: "Azalea-Camelia Beach Access",
+    slug: "azalea-camelia",
+  },
+  {
+    name: "Gardenia Beach Access",
+    slug: "gardenia",
+  },
+  {
+    name: "Inlet Beach Regional Beach Access",
+    slug: "inlet-beach",
+  },
+  {
+    name: "One Seagrove Place",
+    slug: "one-seagrove-place",
+  },
+  {
+    name: "One Seagrove Public Access",
+    slug: "one-seagrove-public",
+  },
+  {
+    name: "Phillips Inlet and Walton Lakeshore Drive Beach Access",
+    slug: "phillips-inlet-walton-lakeshore-drive",
+  },
+  {
+    name: "Santa Clara Regional Access",
+    slug: "santa-clara-regional",
+  },
+  {
+    name: "Shell Seeker's Cove Beach Access",
+    slug: "shell-seekers-cove",
+  },
+  {
+    name: "Spooky Lane Beach Access",
+    slug: "spooky-lane",
+  },
+  {
+    name: "Wall Street Beach Access",
+    slug: "wall-street",
+  },
+  {
+    name: "Walton Dunes Beach Access",
+    slug: "walton-dunes",
+  },
+  {
+    name: "Highway 395 Beach Access",
+    slug: "highway-395",
+  },
+  {
+    name: "Nightcap Beach Access",
+    slug: "nightcap",
+  },
+  {
+    name: "Live Oak Beach Access",
+    slug: "live-oak",
+  },
+  {
+    name: "Hickory Beach Access",
+    slug: "hickory",
+  },
+];
 
 /* ──────────────────────────────────────────────────────────
    Tiny solid navy icon (used in the Amenity Suite teaser pills)
@@ -89,12 +208,48 @@ function Icon({
 
 /* ──────────────────────────────────────────────────────────
    VERTICAL selection bar (with subtle CBS mark)
+   - Beach Access dropdown (from COASTAL_ACCESSES)
+   - Only 4 services
+   - Routes to /30a/[service] with access/start/end
 ────────────────────────────────────────────────────────── */
 function Search30A_Vertical({ showLogo = true }: { showLogo?: boolean }) {
+  const router = useRouter();
+
   const [service, setService] = useState("Chairs & Umbrellas");
+  const [accessSlug, setAccessSlug] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
-  const [nearest, setNearest] = useState(true);
+  const [nearest, setNearest] = useState(true); // keeping UI for now
+
+  const handleCheckAvailability = () => {
+    // Map service display name → 30A route
+    const serviceToPath: Record<string, string> = {
+      "Chairs & Umbrellas": "/30a/chairs",
+      "Beach Bonfires": "/30a/bonfires",
+      "Beach Better Box": "/30a/beach-better-box",
+      "Beach Photography": "/30a/photography",
+    };
+
+    const basePath = serviceToPath[service];
+    if (!basePath) return;
+
+    const params = new URLSearchParams();
+
+    if (accessSlug) {
+      params.set("access", accessSlug);
+    }
+    if (start) {
+      params.set("start", start);
+    }
+    if (end) {
+      params.set("end", end);
+    }
+
+    const queryString = params.toString();
+    const url = queryString ? `${basePath}?${queryString}` : basePath;
+
+    router.push(url);
+  };
 
   return (
     <div
@@ -104,31 +259,36 @@ function Search30A_Vertical({ showLogo = true }: { showLogo?: boolean }) {
       "
       style={{ width: "min(420px, 92vw)" }}
     >
-   <div className="mb-2 flex items-center gap-2">
-  {showLogo && (
-    <img
-      src="/coastal-logo.png"
-      alt=""
-      className="h-7 w-7 rounded-full ring-1 ring-sky-100"
-      onError={(e) => (e.currentTarget.style.display = "none")}
-    />
-  )}
+      <div className="mb-2 flex items-center gap-2">
+        {showLogo && (
+          <img
+            src="/coastal-logo.png"
+            alt=""
+            className="h-7 w-7 rounded-full ring-1 ring-sky-100"
+            onError={(e) => (e.currentTarget.style.display = "none")}
+          />
+        )}
 
-  <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700/80">
-    Coastal Beach Company · 30A
-  </div>
-</div>
+        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700/80">
+          Coastal Beach Company · 30A
+        </div>
+      </div>
 
+      {/* Beach Access dropdown (replaces Market) */}
       <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-        Market
+        Beach Access
       </label>
       <select
-        defaultValue="30A"
+        value={accessSlug}
+        onChange={(e) => setAccessSlug(e.target.value)}
         className="mb-3 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-[14px] outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
       >
-        <option>30A</option>
-        <option>PCB</option>
-        <option>Destin</option>
+        <option value="">Select beach access</option>
+        {COASTAL_ACCESSES.map((access) => (
+          <option key={access.slug} value={access.slug}>
+            {access.name}
+          </option>
+        ))}
       </select>
 
       <label className="mb-1 block text-[12px] font-semibold text-slate-600">
@@ -141,9 +301,10 @@ function Search30A_Vertical({ showLogo = true }: { showLogo?: boolean }) {
       >
         <option>Chairs & Umbrellas</option>
         <option>Beach Bonfires</option>
-        <option>Jet Skis</option>
-        <option>Parasail</option>
+        <option>Beach Better Box</option>
+        <option>Beach Photography</option>
       </select>
+
       <label className="mb-3 flex items-center gap-2 text-[12px] text-sky-800/80">
         <input
           type="checkbox"
@@ -181,10 +342,7 @@ function Search30A_Vertical({ showLogo = true }: { showLogo?: boolean }) {
 
       <button
         className="mt-4 h-11 w-full rounded-lg bg-sky-800 text-white text-[14px] font-semibold hover:bg-sky-900"
-        onClick={() => {
-          const el = document.getElementById("signature-services");
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }}
+        onClick={handleCheckAvailability}
       >
         Check Availability
       </button>
@@ -312,26 +470,26 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-white">
       {/* HERO — panel centered on left third */}
-      <section className="relative isolate mb-0 pb-0">
-        <div className="relative h-[50vh] min-h-[640px] w-full overflow-hidden">
-          <Image
-            src="/hero13.jpg"
-            alt="30A / South Walton — Coastal"
-            fill
-            className="object-cover object-bottom scale-[1.10] translate-y-[70px]"
-            priority
-          />
-        </div>
+      <section className="relative isolate">
+  <div className="relative h-[75vh] min-h-[700px] w-full overflow-hidden">
+    <Image
+      src="/hero13.jpg"
+      alt="30A / South Walton — Coastal"
+      fill
+      className="object-cover translate-y-[-32px]"
+      priority
+      unoptimized
+    />
+  </div>
 
-        {/* Center-left form inside hero */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="mx-auto flex h-full max-w-7xl items-center px-5 md:px-8">
-            <div className="pointer-events-auto w-full md:w-1/3">
-              <Search30A_Vertical showLogo />
-            </div>
-          </div>
-        </div>
-      </section>
+  <div className="pointer-events-none absolute inset-0">
+    <div className="mx-auto flex h-full max-w-7xl items-center px-5 md:px-8">
+      <div className="pointer-events-auto w-full md:w-1/3">
+        <Search30A_Vertical showLogo />
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* HOMEPAGE-MATCHED CAROUSEL */}
       <section

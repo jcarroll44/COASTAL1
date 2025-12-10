@@ -66,7 +66,7 @@ export default function Hero(props: HeroProps) {
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[center_40%]"
+              className="object-cover object-[center_70%]"
             />
           )
         ) : (

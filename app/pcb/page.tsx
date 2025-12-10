@@ -3,7 +3,9 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ServicesCarousel from "@/components/ServicesCarousel";
+import { PCB_CONDOS } from "@/data/pcbCondos";
 
 /* ──────────────────────────────────────────────────────────
    DATA
@@ -63,71 +65,90 @@ function Dot() {
 }
 
 /* ──────────────────────────────────────────────────────────
-   HERO — Right-side stacked selector with Coastal round logo
+   HERO SELECTOR
 ─────────────────────────────────────────────────────────── */
 function PCBSelectorVertical() {
-  const [service, setService] = useState("Chairs & Umbrellas");
+  const router = useRouter();
+
+  const [property, setProperty] = useState("");
+  const [service, setService] = useState("chairs");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
-  const [nearest, setNearest] = useState(true);
+
+  const go = () => {
+    const params = new URLSearchParams();
+    if (property) params.append("property", property);
+    if (start) params.append("start", start);
+    if (end) params.append("end", end);
+
+    router.push(`/pcb/${service}?${params.toString()}`);
+  };
 
   return (
     <div
-      className="rounded-2xl border border-sky-100 bg-white/75 backdrop-blur p-4 md:p-5 shadow-[0_14px_48px_-22px_rgba(2,132,199,0.35)]"
+      className="rounded-3xl border border-white/40 bg-white/60 backdrop-blur-xl p-6 shadow-xl"
       style={{ width: "min(420px,92vw)" }}
     >
       {/* Coastal round logo */}
       <div className="mb-3 flex items-center gap-2">
         <Image
-          src="/coastal-logo.png" // <- put your round Coastal logo here
+          src="/coastal-logo.png"
           alt="Coastal"
           width={28}
           height={28}
           className="rounded-full ring-1 ring-sky-100"
           unoptimized
         />
-        <div className="text-[18px] font-semibold tracking-wide text-sky-800/80">
-          Coastal Beach Company
+        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-sky-700/80">
+          Coastal Beach Company · PCB
         </div>
       </div>
 
+      {/* PROPERTY */}
       <label className="mb-1 block text-[12px] font-semibold text-slate-600">
-        Market
+        Property
       </label>
       <select
-        defaultValue="PCB"
+        value={property}
+        onChange={(e) => setProperty(e.target.value)}
         className="mb-3 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-[14px] outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
       >
-        <option>PCB</option>
-        <option>30A</option>
-        <option>Destin</option>
+        <option value="">Select property</option>
+        {PCB_CONDOS.map((c) => (
+          <option key={c.slug} value={c.slug}>
+            {c.name}
+          </option>
+        ))}
       </select>
 
+      {/* SERVICE DROPDOWN WITH FULL ROUTES */}
       <label className="mb-1 block text-[12px] font-semibold text-slate-600">
         Service
       </label>
       <select
         value={service}
         onChange={(e) => setService(e.target.value)}
-        className="mb-2 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-[14px] outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
+        className="mb-3 h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-[14px] outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200"
       >
-        <option>Chairs & Umbrellas</option>
-        <option>Beach Bonfires</option>
-        <option>Jet Skis</option>
-        <option>Parasail</option>
-        <option>Family Photography</option>
+        {/* Main services */}
+        <option value="chairs">Chairs & Umbrellas</option>
+        <option value="bonfires">Beach Bonfires</option>
+
+        {/* Watersports Hub */}
+        <option value="water-sports">Watersports (All Options)</option>
+
+        {/* Individual watersports */}
+        <option value="jetskis">Jet Skis</option>
+        <option value="parasail">Parasail</option>
+        <option value="banana-boat">Banana Boat</option>
+        <option value="paddleboard">Paddleboard</option>
+        <option value="boat-rentals">Boat Rentals</option>
+
+        {/* Other */}
+        <option value="photography">Family Photography</option>
       </select>
 
-      <label className="mb-3 flex items-center gap-2 text-[12px] text-sky-800/80">
-        <input
-          type="checkbox"
-          checked={nearest}
-          onChange={(e) => setNearest(e.target.checked)}
-          className="rounded border-sky-300 text-sky-700 focus:ring-sky-300"
-        />
-        Nearest PCB beach access
-      </label>
-
+      {/* DATES */}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-[12px] font-semibold text-slate-600">
@@ -153,13 +174,10 @@ function PCBSelectorVertical() {
         </div>
       </div>
 
+      {/* BUTTON */}
       <button
         className="mt-4 h-11 w-full rounded-lg bg-[#005D9C] text-white text-[14px] font-semibold hover:opacity-95"
-        onClick={() =>
-          document
-            .getElementById("signature-services")
-            ?.scrollIntoView({ behavior: "smooth", block: "start" })
-        }
+        onClick={go}
       >
         Check Availability
       </button>
@@ -172,10 +190,9 @@ function PCBSelectorVertical() {
 }
 
 /* ──────────────────────────────────────────────────────────
-   PCB Amenity Suite — airy blue card (matches your 30A vibe)
+   PCB Amenity Suite
 ─────────────────────────────────────────────────────────── */
 function AmenitySuitePromo_PCB() {
-  // extremely subtle/airy blue
   const AIRY = "bg-[#F5F9FF]";
 
   return (
@@ -239,15 +256,13 @@ export default function PCBHomePage() {
       <section className="relative isolate">
         <div className="relative h-[75vh] min-h-[700px] w-full overflow-hidden">
           <Image
-            src="/hero16.jpg"
+            src="/hero-pcb1.jpg"
             alt="Panama City Beach — Coastal"
             fill
             className="object-cover translate-y-[-32px]"
             priority
             unoptimized
           />
-
-          {/* Removed ALL gradient overlays */}
         </div>
 
         <div className="pointer-events-none absolute inset-0">
@@ -259,25 +274,23 @@ export default function PCBHomePage() {
         </div>
       </section>
 
-      {/* CAROUSEL — white section */}
+      {/* CAROUSEL */}
       <section
         id="signature-services"
         className="mx-auto max-w-7xl px-5 md:px-8 mt-14 md:mt-16"
       >
-        {/* Tight, clean heading */}
         <ServicesCarousel items={servicesItems} />
       </section>
 
-      {/* PANAMA CITY BEACH — light blue band with CBS logo */}
+      {/* PCB INFO BAND */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 mt-20 md:mt-24">
         <div className="relative rounded-[28px] border border-[#cfe0ea] bg-[#F5F9FF] p-6 md:p-10">
           <div className="grid gap-10 md:grid-cols-[1.1fr_.9fr] md:items-center">
             {/* LEFT */}
             <div>
-              {/* brand row with CBS round logo */}
               <div className="flex items-center gap-3">
                 <Image
-                  src="/coastal-logo.png" // <- your round CBS logo
+                  src="/coastal-logo.png"
                   alt="Coastal Beach Services"
                   width={36}
                   height={36}
@@ -346,7 +359,7 @@ export default function PCBHomePage() {
               </div>
             </div>
 
-            {/* RIGHT image */}
+            {/* RIGHT */}
             <div className="relative">
               <div className="relative h-80 md:h-[26rem] w-full overflow-hidden rounded-3xl border border-[#cfe0ea] bg-white shadow-[0_22px_70px_-30px_rgba(0,93,156,0.25)]">
                 <Image
@@ -367,10 +380,10 @@ export default function PCBHomePage() {
         </div>
       </section>
 
-      {/* PCB Amenity Suite — airy card */}
+      {/* PCB Amenity Suite */}
       <AmenitySuitePromo_PCB />
 
-      {/* LIVE CAMS — white section with tidy heading & 3-up grid */}
+      {/* LIVE CAMS */}
       <section className="mx-auto max-w-7xl px-5 md:px-8 mt-20 mb-28">
         <div className="mb-5">
           <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#005D9C]">

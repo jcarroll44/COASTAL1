@@ -8,7 +8,7 @@ import PcbExtras from "../PcbExtras";
 const svc: Service = {
   title: "PCB Chairs & Umbrellas",
   blurb: "Daily setup & takedown—placed with care by our beach crew.",
-  hero: "/cards/chairs-day.jpg",
+  hero: "/cards/pcb-chairs1.jpg",
   scope: "pcb",
   quantityLabel: "sets",
   askDate: true,
@@ -38,7 +38,11 @@ export default function Page() {
       <section className="mx-auto max-w-7xl px-5 pt-4 md:px-8 md:pt-6">
         <ServiceBookingPage service={svc} />
       </section>
-      <PcbExtras />
+
+      {/* Align extras with same max-width */}
+      <section className="mx-auto max-w-7xl px-5 md:px-8">
+        <PcbExtras />
+      </section>
     </main>
   );
 }

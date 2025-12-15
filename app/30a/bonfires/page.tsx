@@ -11,13 +11,8 @@ const OrderBridge = dynamic(() => import("@/components/OrderBridge"), {
 const svc: Service = {
   title: "30A Beach Bonfires",
   blurb: "Permits, setup, seating, and s’mores — handled by our crew.",
-  hero: "/cards/bonfire.jpg",
-  heroGallery: [
-    "/bonfire1.jpg",
-    "/bonfire2.jpg",
-    "/bonfire3.jpg",
-    "/bonfire4.jpg",
-  ],
+  hero: "/beach-bonfires2.jpg",
+  heroGallery: ["/beach-bonfires2.jpg", "/bonfire2.jpg"],
   scope: "30a",
   quantityLabel: "guests",
   askDate: true,

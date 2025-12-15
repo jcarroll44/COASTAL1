@@ -5,7 +5,7 @@ export default function PCBPaddleboardPage() {
     <ProductLanding
       title="Paddleboard – Panama City Beach"
       subtitle="Calm-water cruising with multiple launch spots daily."
-      hero="/cards/paddleboard.jpg"
+      hero="/cards/paddle1.jpg"
       priceNote="$35+ / hour"
       bullets={[
         { text: "Beginner-friendly boards and tips" },

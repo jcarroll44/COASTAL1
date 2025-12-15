@@ -9,7 +9,7 @@ const ThirtyAHomeMap = lazy(() => import("@/components/ThirtyAHomeMap"));
 const svc: Service = {
   title: "30A Chairs & Umbrellas",
   blurb: "Daily setup & takedown—placed with care by our beach crew.",
-  hero: "/chairs-week.jpg",
+  hero: "/cards/30A-Chairs1.jpg",
   quantityLabel: "sets",
   askDate: true,
   packages: [

@@ -221,17 +221,23 @@ export default function HomePage() {
             "/homepage/homepage-hero12.jpg",
             "/homepage/hero12.jpg",
             "/homepage/homepage-hero16.jpg",
-            "/homepage/PCB-hero1.jpg",
+            "/homepage/PCB-Staff2.jpg",
           ]}
           options={[
-            { fit: "cover", offsetY: 0 },
-            { fit: "cover", position: "50% 10%" }, // ✅ ONLY CHANGE — should move this image DOWN to show more top
-            { fit: "cover", offsetY: 0 },
-            { fit: "cover", offsetY: 0 },
+            { offsetY: 0 },
+            { position: "50% 10%" }, // ✅ hero12 crop control
+            { offsetY: 0 },
+            { offsetY: 0 },
+          ]}
+          // ✅ NEW: right-side service rail (1 active)
+          tabs={[
+            { label: "Chairs & Umbrellas" },
+            { label: "Beach Better Box" },
+            { label: "Watersports" },
+            { label: "Beach Bonfires" },
           ]}
           interval={6000}
-          fadeDuration={2600}
-          scale={1}
+          fadeDuration={800} // ✅ for vertical push: animation duration (was 2600)
         >
           <HomeBookingBar />
         </Hero>

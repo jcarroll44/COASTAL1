@@ -4,6 +4,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Hero from "@/components/Hero"; // ✅ NEW
 import ServicesCarousel from "@/components/ServicesCarousel";
 import { PCB_CONDOS } from "@/data/pcbCondos";
 
@@ -254,24 +255,37 @@ export default function PCBHomePage() {
     <main className="mx-auto max-w-[120rem]">
       {/* HERO */}
       <section className="relative isolate">
-        <div className="relative h-[75vh] min-h-[700px] w-full overflow-hidden">
-          <Image
-            src="/hero-pcb1.jpg"
-            alt="Panama City Beach — Coastal"
-            fill
-            className="object-cover translate-y-[-32px]"
-            priority
-            unoptimized
-          />
-        </div>
-
-        <div className="pointer-events-none absolute inset-0">
-          <div className="mx-auto flex h-full max-w-7xl items-center justify-end px-6 md:px-10">
-            <div className="pointer-events-auto w-full md:w-1/3">
-              <PCBSelectorVertical />
+        <Hero
+          images={[
+            "/hero-pcb1.jpg",
+            "/cards/pcb-chairs1.jpg",
+            "/bonfire2.jpg",
+            "/cards/jetski1.png",
+          ]}
+          options={[
+            { position: "50% 40%" }, // hero-pcb1 baseline
+            { position: "50% 50%" }, // chairs
+            { position: "50% 35%" }, // bonfire
+            { position: "50% 45%" }, // jetski
+          ]}
+          tabs={[
+            { label: "Panama City Beach" },
+            { label: "Chairs & Umbrellas" },
+            { label: "Beach Bonfires" },
+            { label: "Watersports" },
+          ]}
+          interval={6500}
+          fadeDuration={800}
+        >
+          {/* Keep your existing overlay EXACTLY the same */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="mx-auto flex h-full max-w-7xl items-center justify-end px-6 md:px-10">
+              <div className="pointer-events-auto w-full md:w-1/3">
+                <PCBSelectorVertical />
+              </div>
             </div>
           </div>
-        </div>
+        </Hero>
       </section>
 
       {/* CAROUSEL */}

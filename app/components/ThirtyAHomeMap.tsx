@@ -668,7 +668,7 @@ export default function ThirtyAHomeMap({
         {origin && nearest && (
           <div className="absolute bottom-3 left-3 w-[280px] md:w-[320px] max-w-[85vw] rounded-2xl bg-[rgba(255,255,255,0.97)] backdrop-blur px-4 py-3 ring-1 ring-slate-200 shadow-[0_10px_30px_rgba(2,132,199,0.18)] pointer-events-auto">
             <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-sky-600">
-              Closest Access (by road)
+              Closest Public Access
             </div>
             <div className="mt-1 text-[16px] md:text-[18px] font-semibold text-sky-900 leading-snug">
               {nearest.name}
@@ -692,15 +692,24 @@ export default function ThirtyAHomeMap({
 
             {/* stacked to increase height + reduce width footprint */}
             <div className="mt-3 flex flex-col gap-2">
-              <a
-                href={googleMapsHref}
-                target="_blank"
-                rel="noreferrer"
+              {/* ✅ CHANGE: Book Chairs on top (blue primary button, same style as old Open in Maps) */}
+              <button
+                onClick={handleBook}
                 className="inline-flex items-center justify-center rounded-lg bg-sky-700 px-3.5 py-2 text-sm font-semibold text-white hover:bg-sky-800"
               >
-                Open in Maps
-              </a>
+                Book Chairs
+              </button>
+
+              {/* ✅ CHANGE: Open in Maps + View Access below */}
               <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={googleMapsHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-sm font-semibold text-sky-800 hover:bg-sky-50"
+                >
+                  Open in Maps
+                </a>
                 <button
                   onClick={() =>
                     mapRef.current?.flyTo({
@@ -709,15 +718,9 @@ export default function ThirtyAHomeMap({
                       speed: 0.7,
                     })
                   }
-                  className="rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-sm font-medium text-sky-800"
+                  className="rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-sm font-medium text-sky-800 hover:bg-sky-50"
                 >
                   View Access
-                </button>
-                <button
-                  onClick={handleBook}
-                  className="rounded-lg border border-sky-200 bg-white px-3.5 py-2 text-sm font-semibold text-[#0a6fbf]"
-                >
-                  Book Chairs
                 </button>
               </div>
             </div>

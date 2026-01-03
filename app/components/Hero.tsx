@@ -8,19 +8,48 @@ type BaseProps = {
   children?: React.ReactNode;
 };
 
-type HeroProps =
-  | (BaseProps & {
-      images: string[];
-      interval?: number;
-      poster?: never;
-      videoSrc?: never;
-    })
-  | (BaseProps & {
-      poster: string;
-      videoSrc?: string;
-      images?: never;
-      interval?: never;
-    });
+type HeroImageOption = {
+  /**
+   * Optional explicit CSS object-position string (overrides offsetY)
+   * Example: "50% 10%"
+   */
+  position?: string;
+
+  /**
+   * Pixel adjustment from the default 70% vertical position.
+   * Positive offsetY shows MORE TOP (crops more bottom)
+   * Negative offsetY shows MORE BOTTOM (crops more top)
+   */
+  offsetY?: number;
+};
+
+type CarouselProps = BaseProps & {
+  images: string[];
+  interval?: number;
+
+  // per-image crop controls
+  options?: HeroImageOption[];
+
+  // allowed if you pass them (no visual change otherwise)
+  fadeDuration?: number;
+  scale?: number;
+
+  poster?: never;
+  videoSrc?: never;
+};
+
+type VideoProps = BaseProps & {
+  poster: string;
+  videoSrc?: string;
+  images?: never;
+  interval?: never;
+
+  options?: never;
+  fadeDuration?: never;
+  scale?: never;
+};
+
+type HeroProps = CarouselProps | VideoProps;
 
 export default function Hero(props: HeroProps) {
   const [allowMotion, setAllowMotion] = useState(false);
@@ -53,6 +82,16 @@ export default function Hero(props: HeroProps) {
     return imgs[idx] || imgs[0] || null;
   }, [isCarousel, imgs, idx]);
 
+  const currentObjectPosition = useMemo(() => {
+    if (!isCarousel) return "center 70%";
+    const opt = props.options?.[idx];
+
+    if (opt?.position) return opt.position;
+
+    const offsetY = opt?.offsetY ?? 0;
+    return `center calc(70% - ${offsetY}px)`;
+  }, [isCarousel, idx, props.options]);
+
   return (
     <section className="relative isolate px-2 md:px-3 bg-white">
       {/* square bottom (no rounding) */}
@@ -61,12 +100,14 @@ export default function Hero(props: HeroProps) {
         {isCarousel ? (
           currentImage && (
             <Image
+              key={`${idx}-${currentImage}`} // ✅ FIX: remount per slide to prevent 1-frame crop glitch
               src={currentImage}
               alt=""
               fill
               priority
               sizes="100vw"
-              className="object-cover object-[center_70%]"
+              className="object-cover"
+              style={{ objectPosition: currentObjectPosition }}
             />
           )
         ) : (
@@ -78,12 +119,14 @@ export default function Hero(props: HeroProps) {
                 fill
                 priority
                 sizes="100vw"
-                className="object-cover object-[center_40%]"
+                className="object-cover"
+                style={{ objectPosition: "center 40%" }}
               />
             )}
             {props.videoSrc && allowMotion && (
               <video
-                className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: "center 40%" }}
                 autoPlay
                 muted
                 loop

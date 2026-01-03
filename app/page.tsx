@@ -1,3 +1,4 @@
+// app/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -216,8 +217,20 @@ export default function HomePage() {
       {/* HERO */}
       <section className="relative">
         <Hero
-          images={["/hero-pcb1.jpg", "/chairs30a.jpg", "/hero.jpg"]}
+          images={[
+            "/homepage/homepage-hero12.jpg",
+            "/homepage/hero12.jpg",
+            "/homepage/homepage-hero16.jpg",
+            "/homepage/PCB-hero1.jpg",
+          ]}
+          options={[
+            { fit: "cover", offsetY: 0 },
+            { fit: "cover", position: "50% 10%" }, // ✅ ONLY CHANGE — should move this image DOWN to show more top
+            { fit: "cover", offsetY: 0 },
+            { fit: "cover", offsetY: 0 },
+          ]}
           interval={6000}
+          fadeDuration={2600}
           scale={1}
         >
           <HomeBookingBar />

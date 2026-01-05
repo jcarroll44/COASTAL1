@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Hero from "@/components/Hero"; // ✅ NEW
+import Hero from "@/components/Hero";
 import ServicesCarousel from "@/components/ServicesCarousel";
 import { PCB_CONDOS } from "@/data/pcbCondos";
 
@@ -255,28 +255,7 @@ export default function PCBHomePage() {
     <main className="mx-auto max-w-[120rem]">
       {/* HERO */}
       <section className="relative isolate">
-        <Hero
-          images={[
-            "/hero-pcb1.jpg",
-            "/cards/pcb-chairs1.jpg",
-            "/bonfire2.jpg",
-            "/cards/jetski1.png",
-          ]}
-          options={[
-            { position: "50% 40%" }, // hero-pcb1 baseline
-            { position: "50% 50%" }, // chairs
-            { position: "50% 35%" }, // bonfire
-            { position: "50% 45%" }, // jetski
-          ]}
-          tabs={[
-            { label: "Panama City Beach" },
-            { label: "Chairs & Umbrellas" },
-            { label: "Beach Bonfires" },
-            { label: "Watersports" },
-          ]}
-          interval={6500}
-          fadeDuration={800}
-        >
+        <Hero poster="/homepage/PCB-Staff2.jpg" childrenPosition="overlay">
           {/* Keep your existing overlay EXACTLY the same */}
           <div className="pointer-events-none absolute inset-0">
             <div className="mx-auto flex h-full max-w-7xl items-center justify-end px-6 md:px-10">

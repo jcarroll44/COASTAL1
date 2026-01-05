@@ -1,6 +1,7 @@
 // app/components/HomeBookingBar.tsx
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
@@ -26,132 +27,127 @@ const SERVICES: Record<"pcb" | "30a", { label: string; slug: string }[]> = {
 export default function HomeBookingBar() {
   const router = useRouter();
   const [market, setMarket] = useState<"" | "pcb" | "30a">("");
-  const [service, setService] = useState<string>("");
+  const [service, setService] = useState("");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
-  const serviceOptions = useMemo(() => {
-    if (!market) return [];
-    return SERVICES[market];
-  }, [market]);
+  const serviceOptions = useMemo(
+    () => (market ? SERVICES[market] : []),
+    [market]
+  );
 
   function handleSelectMarket(next: "" | "pcb" | "30a") {
     setMarket(next);
-    if (next) {
-      const first = SERVICES[next][0];
-      setService(first?.slug ?? "");
-    } else {
-      setService("");
-    }
+    setService(next ? SERVICES[next][0]?.slug ?? "" : "");
   }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!market || !service) return;
-    const path = `/${market}/${service}`;
+
     const params = new URLSearchParams();
     if (start) params.set("start", start);
     if (end) params.set("end", end);
-    router.push(params.toString() ? `${path}?${params.toString()}` : path);
+
+    router.push(
+      params.toString()
+        ? `/${market}/${service}?${params.toString()}`
+        : `/${market}/${service}`
+    );
   }
 
-  const disabledUntilMarket = !market;
+  const inputBase =
+    "h-11 w-full rounded-xl border px-4 text-[14px] outline-none transition " +
+    "focus:border-[#0170BF] focus:ring-2 focus:ring-[#A1D9FF]";
+
+  const inputDisabled =
+    "border-slate-200 bg-white/70 text-slate-400 placeholder:text-slate-400 cursor-not-allowed";
+
+  const inputEnabled = "border-slate-300 bg-white text-slate-700";
 
   return (
     <div
       className="
-        mx-auto w-full max-w-5xl
-        rounded-2xl bg-white/75 backdrop-blur-lg
-        ring-1 ring-slate-200 shadow-[0_8px_24px_rgba(0,0,0,0.06)]
-        px-4 py-5 md:px-5 md:py-6
+        mx-auto w-full max-w-6xl
+        rounded-3xl bg-white/85 backdrop-blur-sm
+        shadow-[0_12px_40px_rgba(0,0,0,0.08)]
+        px-6 py-6 md:px-8 md:py-7
       "
-      role="region"
-      aria-label="Coastal booking"
     >
-      {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[15px] font-semibold tracking-[.10em] uppercase text-[#0584C7]">
-          Coastal Beach Company
-        </span>
+      {/* HEADER */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/coastal-logo.png"
+            alt="Coastal Beach Company"
+            width={22}
+            height={22}
+            className="opacity-90"
+            unoptimized
+          />
+          <span className="text-[14px] font-semibold tracking-[0.18em] uppercase text-[#0170BF]">
+            Coastal Beach Company
+          </span>
+        </div>
+
         <a
           href="/suite"
-          className="hidden text-[12.5px] md:block text-[#0584C7] font-medium tracking-wide hover:underline hover:text-[#046FB0] transition-colors"
+          className="hidden md:inline text-[14px] font-medium text-[#0170BF] hover:underline"
         >
           Explore Our Coastal Experiences →
         </a>
       </div>
 
+      {/* FORM */}
       <form
         onSubmit={submit}
         className="
-          grid gap-3
-          grid-cols-1 sm:grid-cols-2
-          lg:grid-cols-[minmax(160px,180px)_minmax(240px,1fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(160px,180px)]
+          grid gap-4
+          grid-cols-1
+          md:grid-cols-[180px_1fr_180px_180px_200px]
         "
       >
-        {/* Location */}
+        {/* LOCATION */}
         <div>
-          <label className="mb-1 block text-[11.5px] font-semibold text-slate-700">
+          <label className="mb-1 block text-[12px] font-medium text-slate-700">
             Location
           </label>
-          {/* Segmented (desktop) */}
-          <div className="hidden overflow-hidden rounded-full ring-1 ring-slate-200 lg:flex">
-            {(["pcb", "30a"] as const).map((m, i) => {
+
+          <div className="flex rounded-full border border-slate-300 overflow-hidden h-11 bg-white">
+            {(["pcb", "30a"] as const).map((m) => {
               const active = market === m;
               return (
                 <button
                   key={m}
                   type="button"
                   onClick={() => handleSelectMarket(m)}
-                  className={[
-                    "h-10 flex-1 text-[13px] font-medium transition-colors relative",
+                  className={`flex-1 text-[13px] font-medium transition ${
                     active
-                      ? "bg-[#0584C7] text-white"
-                      : "bg-white text-slate-700 hover:bg-slate-50",
-                    i === 0 ? "rounded-l-full" : "rounded-r-full",
-                  ].join(" ")}
-                  aria-pressed={active}
+                      ? "bg-[#0170BF] text-white"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
                 >
                   {m.toUpperCase()}
-                  {i === 0 && (
-                    <span className="absolute right-0 top-[15%] h-[70%] w-[1px] bg-slate-200" />
-                  )}
                 </button>
               );
             })}
           </div>
-
-          {/* Select (mobile) */}
-          <select
-            value={market}
-            onChange={(e) =>
-              handleSelectMarket(e.target.value as "" | "pcb" | "30a")
-            }
-            className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-[14px] outline-none focus:border-[#0584C7] focus:ring-2 focus:ring-[#B9E2F8] lg:hidden"
-          >
-            <option value="">Select location…</option>
-            <option value="pcb">PCB</option>
-            <option value="30a">30A</option>
-          </select>
         </div>
 
-        {/* Service */}
+        {/* SERVICE */}
         <div>
-          <label className="mb-1 block text-[11.5px] font-semibold text-slate-700">
+          <label className="mb-1 block text-[12px] font-medium text-slate-700">
             Service
           </label>
           <select
             value={service}
             onChange={(e) => setService(e.target.value)}
-            disabled={disabledUntilMarket}
-            className={[
-              "h-10 w-full rounded-lg border px-3 text-[14px] outline-none focus:border-[#0584C7] focus:ring-2 focus:ring-[#B9E2F8]",
-              disabledUntilMarket
-                ? "border-slate-200 bg-slate-50 text-slate-400"
-                : "border-slate-300 bg-white",
-            ].join(" ")}
+            disabled={!market}
+            className={`${inputBase} ${
+              market ? inputEnabled : inputDisabled
+            }`}
           >
-            {disabledUntilMarket ? (
+            {!market ? (
               <option value="">Choose location first…</option>
             ) : (
               serviceOptions.map((s) => (
@@ -163,41 +159,35 @@ export default function HomeBookingBar() {
           </select>
         </div>
 
-        {/* Start */}
+        {/* START */}
         <div>
-          <label className="mb-1 block text-[11.5px] font-semibold text-slate-700">
+          <label className="mb-1 block text-[12px] font-medium text-slate-700">
             Start
           </label>
           <input
             type="date"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            disabled={disabledUntilMarket}
-            className={[
-              "h-10 w-full rounded-lg border px-3 text-[14px] outline-none focus:border-[#0584C7] focus:ring-2 focus:ring-[#B9E2F8]",
-              disabledUntilMarket
-                ? "border-slate-200 bg-slate-50 text-slate-400"
-                : "border-slate-300 bg-white",
-            ].join(" ")}
+            disabled={!market}
+            className={`${inputBase} ${
+              market ? inputEnabled : inputDisabled
+            }`}
           />
         </div>
 
-        {/* End */}
+        {/* END */}
         <div>
-          <label className="mb-1 block text-[11.5px] font-semibold text-slate-700">
+          <label className="mb-1 block text-[12px] font-medium text-slate-700">
             End
           </label>
           <input
             type="date"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            disabled={disabledUntilMarket}
-            className={[
-              "h-10 w-full rounded-lg border px-3 text-[14px] outline-none focus:border-[#0584C7] focus:ring-2 focus:ring-[#B9E2F8]",
-              disabledUntilMarket
-                ? "border-slate-200 bg-slate-50 text-slate-400"
-                : "border-slate-300 bg-white",
-            ].join(" ")}
+            disabled={!market}
+            className={`${inputBase} ${
+              market ? inputEnabled : inputDisabled
+            }`}
           />
         </div>
 
@@ -206,13 +196,11 @@ export default function HomeBookingBar() {
           <button
             type="submit"
             disabled={!market || !service}
-            className={[
-              "h-10 w-full rounded-lg text-[14px] font-semibold transition-colors",
+            className={`h-11 w-full rounded-xl text-[15px] font-semibold transition ${
               !market || !service
                 ? "bg-slate-200 text-slate-500"
-                : "bg-[#0584C7] text-white hover:bg-[#046FB0] shadow-[0_10px_22px_-12px_rgba(5,132,199,0.45)]",
-            ].join(" ")}
-            aria-disabled={!market || !service}
+                : "bg-[#0170BF] text-white hover:bg-[#015EA3]"
+            }`}
           >
             Reserve Now
           </button>

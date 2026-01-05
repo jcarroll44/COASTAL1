@@ -1,9 +1,9 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Coastal Beach Company",
@@ -17,11 +17,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-sky-50 text-sky-900 antialiased">
-        <Header />
-        {children}
-        {/* GLOBAL FOOTER */}
-        <Footer />
+      <body
+        className="bg-white text-sky-900 antialiased"
+        suppressHydrationWarning
+      >
+        <Providers>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

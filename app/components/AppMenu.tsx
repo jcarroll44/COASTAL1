@@ -1,4 +1,3 @@
-// app/components/AppMenu.tsx
 "use client";
 
 import Link from "next/link";
@@ -11,7 +10,7 @@ const NAV = [
   { label: "30A / South Walton", href: "/30a" },
   { label: "Panama City Beach", href: "/pcb" },
   { label: "Coastal – Build Your Week", href: "/suite" },
-  { label: "Beach Cams", href: "/cams" },
+  { label: "Beach Cams", href: "/beach-cams" },
   { label: "Current Beach Conditions", href: "/conditions" },
   { label: "About Us", href: "/about" },
 ];
@@ -19,26 +18,38 @@ const NAV = [
 export default function AppMenu({ open, onClose }: Props) {
   const pathname = usePathname();
 
+  // close on ESC + lock scroll while open
   useEffect(() => {
     if (!open) return;
+
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+
+    const el = document.documentElement;
+    const prev = el.style.overflow;
+    el.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      el.style.overflow = prev;
+    };
   }, [open, onClose]);
 
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[100]"
+      className="fixed inset-0 z-[200]" // <— higher than your header/logo
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
+      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/40" />
 
+      {/* Panel */}
       <div
-        className="absolute left-0 top-0 h-full w-[320px] max-w-[85%] bg-white shadow-2xl flex flex-col"
+        className="absolute left-0 top-0 z-[210] h-full w-[320px] max-w-[85%] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

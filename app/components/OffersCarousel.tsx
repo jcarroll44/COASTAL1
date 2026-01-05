@@ -1,4 +1,3 @@
-// app/components/OffersCarousel.tsx
 "use client";
 
 import { useMemo, useState } from "react";
@@ -17,7 +16,7 @@ const CARDS: Card[] = [
     title: "Chairs & Umbrellas",
     blurb: "Daily setup & takedown—placed with care.",
     href: "/chairs",
-    img: "/chairs.jpg",
+    img: "/chairs-week.jpg",
     badge: "Signature Service",
   },
   {

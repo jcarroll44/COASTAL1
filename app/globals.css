@@ -79,3 +79,110 @@
 .signature-carousel * {
   animation: none !important;
 }
+
+/* Premium booking tweaks */
+.kicker {
+  @apply block text-[11px] font-medium text-sky-600 mb-1;
+}
+.field {
+  @apply h-10 w-full rounded-xl border border-sky-200 bg-white px-3 text-sm outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-200;
+}
+
+/* container used throughout your codebase (already present on many pages) */
+.coastal-container {
+  @apply mx-auto max-w-6xl px-6;
+}
+/* ==== Coastal Conditions / Forecast polish (isolated) ====================== */
+/* New tokens used ONLY by the conditions/forecast components */
+:root {
+  --coast-ink: #0f172a; /* slate-900 */
+  --coast-line: #e2e8f0; /* slate-200 */
+  --coast-card: #ffffffcc; /* white/80 */
+  --coast-glow: 0 18px 60px -40px rgba(1, 112, 191, 0.32); /* brand halo */
+}
+
+/* Wrapper cards for “Current Conditions” and “Forecast” */
+.coastal-card {
+  background: var(--coast-card);
+  border: 1px solid var(--coast-line);
+  border-radius: 18px;
+  box-shadow: var(--coast-glow);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Small section kicker text (e.g., “Current Conditions”, “Forecast”) */
+.coastal-kicker {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #0ea5e9; /* sky-500 */
+  font-weight: 700;
+}
+
+/* Muted helper text (timestamps, tiny labels) */
+.coastal-muted {
+  font-size: 12px;
+  color: #64748b; /* slate-500 */
+  opacity: 0.9;
+}
+
+/* Location + mode toggle pills (hourly/7-day, 30A/PCB) */
+.coastal-pill {
+  border: 1px solid #bae6fd; /* sky-200 */
+  background: #f0f9ff; /* sky-50 */
+  color: #0369a1; /* sky-700 */
+  border-radius: 9999px;
+  padding: 0.25rem 0.6rem;
+  font-weight: 600;
+  font-size: 12px;
+  transition: background-color 0.15s ease;
+}
+.coastal-pill:hover {
+  background: #e0f2fe; /* sky-100 */
+}
+
+/* Small “Updated …” chip (right-aligned under sections) */
+.coastal-updated {
+  border: 1px solid var(--coast-line);
+  background: #f8fafc; /* slate-50 */
+  color: #475569; /* slate-600 */
+  border-radius: 10px;
+  padding: 0.25rem 0.5rem;
+  font-size: 11px;
+}
+
+/* Forecast tiles */
+.coastal-tile {
+  min-width: 7.25rem;
+  border: 1px solid var(--coast-line);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 30px -22px rgba(2, 132, 199, 0.28);
+  padding: 0.75rem 0.875rem;
+  text-align: center;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.coastal-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px -22px rgba(2, 132, 199, 0.35);
+}
+
+/* Numbers + tiny rows inside tiles */
+.coastal-temp {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--coast-ink);
+}
+.coastal-meta {
+  margin-top: 0.25rem;
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* Weather icon tone (works with react-icons) */
+.coastal-icon {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  color: #0ea5e9;
+}

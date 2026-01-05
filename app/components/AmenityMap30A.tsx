@@ -1,4 +1,3 @@
-// app/components/AmenityMap30A.tsx
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
@@ -100,10 +99,8 @@ export default function AmenityMap30A({
       "bottom-right"
     );
 
-    // ensure correct sizing if parent reflows
     const onResize = () => map.resize();
     window.addEventListener("resize", onResize);
-
     map.on("load", () => map.resize());
 
     return () => {
@@ -118,7 +115,7 @@ export default function AmenityMap30A({
     const map = mapRef.current;
     if (!map || !home) return;
 
-    // clear route layers/sources each change
+    // clear route
     const clear = () => {
       ["route-line", "route-casing"].forEach(
         (id) => map.getLayer(id) && map.removeLayer(id)
@@ -127,7 +124,6 @@ export default function AmenityMap30A({
     };
     clear();
 
-    // fit just to home if we don't yet have a nearest access
     const fit = (lngLatA: [number, number], lngLatB?: [number, number]) => {
       if (lngLatB) {
         const b = new mapboxgl.LngLatBounds();
@@ -151,7 +147,7 @@ export default function AmenityMap30A({
       fit(homeLL);
       dropMarker(
         homeLL,
-        "rounded-full ring-2 ring-white bg-sky-600 w-3.5 h-3.5 shadow-[0_6px_18px_rgba(0,0,0,0.2)]"
+        "rounded-full ring-2 ring-white bg-sky-600 w-3.5 h-3.5 shadow"
       );
       return;
     }
@@ -161,11 +157,11 @@ export default function AmenityMap30A({
 
     dropMarker(
       homeLL,
-      "rounded-full ring-2 ring-white bg-sky-600 w-3.5 h-3.5 shadow-[0_6px_18px_rgba(0,0,0,0.2)]"
+      "rounded-full ring-2 ring-white bg-sky-600 w-3.5 h-3.5 shadow"
     );
     dropMarker(
       accLL,
-      "rounded-full ring-2 ring-white bg-emerald-500 w-3.5 h-3.5 shadow-[0_6px_18px_rgba(0,0,0,0.2)]"
+      "rounded-full ring-2 ring-white bg-emerald-500 w-3.5 h-3.5 shadow"
     );
 
     fetchRoute(
@@ -215,14 +211,25 @@ export default function AmenityMap30A({
   }
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow-[0_18px_50px_rgba(2,132,199,0.07)]">
+    <div className="relative w-full rounded-2xl overflow-hidden ring-1 ring-slate-200 shadow">
       <div ref={containerRef} className="h-[380px] w-full" />
       {home && nearest && (
-        <div className="pointer-events-none absolute left-3 top-3 rounded-md bg-white/80 backdrop-blur px-3 py-2 text-[13px] text-slate-700 ring-1 ring-slate-200 shadow-sm">
-          <div className="font-semibold text-slate-900">{home.name}</div>
-          <div className="opacity-80">{home.address}</div>
-          <div className="mt-1.5 text-[12px]">
-            Closest access: <span className="font-medium">{nearest.name}</span>
+        <div className="absolute left-3 bottom-3 rounded-md bg-white/85 backdrop-blur px-3 py-2 text-[12px] text-slate-800 ring-1 ring-slate-200 shadow-sm pointer-events-none">
+          <div className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-sky-600" />
+            <span className="font-medium">{home.name}</span>
+          </div>
+          {home.address && (
+            <div className="ml-4 mt-0.5 text-[11px] text-slate-600 leading-snug">
+              {home.address}
+            </div>
+          )}
+          <div className="mt-1 flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            <span className="text-[11px]">
+              Closest access:{" "}
+              <span className="font-medium">{nearest.name}</span>
+            </span>
           </div>
         </div>
       )}

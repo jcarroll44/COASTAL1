@@ -1,24 +1,48 @@
-import ProductLanding from "@/components/ProductLanding";
+"use client";
 
-export default function PCBChairsPage() {
+import ServiceBookingPage, {
+  ServiceBookingConfig as Service,
+} from "@/components/ServiceBookingPage";
+import PcbExtras from "../PcbExtras";
+
+const svc: Service = {
+  title: "PCB Chairs & Umbrellas",
+  blurb: "Daily setup & takedown—placed with care by our beach crew.",
+  hero: "/cards/pcb-chairs1.jpg",
+  scope: "pcb",
+  quantityLabel: "sets",
+  askDate: true,
+  packages: [
+    {
+      id: "day",
+      name: "Reserve Per Day",
+      price: 55,
+      details: "Setup by 9am, takedown at 5:00 PM",
+    },
+    {
+      id: "week",
+      name: "Reserve Week",
+      price: 300,
+      details: "Setup by 9am, takedown at 5:00 PM",
+    },
+  ],
+  addons: [
+    { id: "extra-chair", name: "Extra Chair", price: 10 },
+    { id: "extra-umbrella", name: "Extra Umbrella", price: 20 },
+  ],
+};
+
+export default function Page() {
   return (
-    <ProductLanding
-      title="PCB Chairs & Umbrellas"
-      subtitle="1 set = 2 chairs + 1 umbrella — placed for you daily."
-      hero="/cards/chairs-pcb.jpg"
-      priceNote="$55/day • $300/week per set"
-      bullets={[
-        { text: "Premium canvas chairs & shade" },
-        { text: "Daily setup & takedown by our team" },
-        { text: "Closest public access to your rental" },
-      ]}
-      ctaText="Check Access & Dates"
-      gallery={["/cards/chairs-pcb.jpg", "/hero-pcb.jpg"]}
-    >
-      <p className="text-sky-800">
-        Pick your beach access, choose dates, and we’ll do the rest. Need
-        multiple sets or special placement? Add it in the notes.
-      </p>
-    </ProductLanding>
+    <main className="bg-white">
+      <section className="mx-auto max-w-7xl px-5 pt-4 md:px-8 md:pt-6">
+        <ServiceBookingPage service={svc} />
+      </section>
+
+      {/* Align extras with same max-width */}
+      <section className="mx-auto max-w-7xl px-5 md:px-8">
+        <PcbExtras />
+      </section>
+    </main>
   );
 }

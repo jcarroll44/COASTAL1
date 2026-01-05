@@ -1,37 +1,75 @@
-// app/bonfires/page.tsx
+// app/30a/bonfires/page.tsx
 "use client";
 
-import { ItineraryProvider } from "@/components/Itinerary";
-import AlaCarteTemplate from "@/components/AlaCarteTemplate";
+import ServiceBookingPage, { Service } from "@/components/ServiceBookingPage";
+import { Accordion30A } from "@/components/BookingAccordion";
+import dynamic from "next/dynamic";
+const OrderBridge = dynamic(() => import("@/components/OrderBridge"), {
+  ssr: false,
+});
 
-export default function BonfiresPage() {
+const svc: Service = {
+  title: "30A Beach Bonfires",
+  blurb: "Permits, setup, seating, and s’mores — handled by our crew.",
+  hero: "/beach-bonfires2.jpg",
+  heroGallery: ["/beach-bonfires2.jpg", "/bonfire2.jpg"],
+  scope: "30a",
+  quantityLabel: "guests",
+  askDate: true,
+  packages: [
+    {
+      id: "std",
+      name: "Standard Bonfire (up to 10)",
+      price: 500,
+      details: "2 hours • sunset",
+    },
+    {
+      id: "sig",
+      name: "Signature Bonfire (up to 20)",
+      price: 800,
+      details: "Lounge seating • lanterns",
+    },
+  ],
+  addons: [
+    { id: "smores", name: "S’mores Kit", price: 40 },
+    { id: "extra-seating", name: "Extra Seating", price: 15, perUnit: true },
+    { id: "photo", name: "Photographer (30 min)", price: 175 },
+  ],
+  locations: [
+    { value: "camellia", label: "Camellia Access" },
+    { value: "holly", label: "Holly Access" },
+    { value: "azalea", label: "Azalea Access" },
+  ],
+};
+
+export default function Page() {
   return (
-    <ItineraryProvider>
-      <AlaCarteTemplate
-        title="Beach Bonfires"
-        tagline="Permits, setup, seating & s’mores—handled by our crew."
-        heroImage="/hero/bonfire-hero.jpg"
-        options={[
-          {
-            id: "standard",
-            title: "Standard Bonfire (up to 10)",
-            image: "/cards/bonfire.jpg",
-            price: 500,
-            note: "2 hours • sunset",
-          },
-          {
-            id: "signature",
-            title: "Signature Bonfire (up to 20)",
-            image: "/cards/bonfire-signature.jpg",
-            price: 800,
-            note: "Lounge seating • lanterns",
-          },
-        ]}
-        addons={[
-          { id: "smores", title: "S’mores Kit", price: 40 },
-          { id: "acoustic", title: "Acoustic Guitarist", price: 250 },
-        ]}
+    <main className="bg-white">
+      {/* Top cards row */}
+      <section className="mx-auto max-w-7xl px-5 pt-4 md:px-8 md:pt-6">
+        <ServiceBookingPage service={svc} />
+      </section>
+
+      {/* Accordion — EXACT same container as above */}
+      <section className="mx-auto max-w-screen-2xl px-5 pt-4 md:px-8 md:pt-6">
+        <Accordion30A />
+      </section>
+
+      {/* Bridge: no visual output, wires your existing controls */}
+      <OrderBridge
+        buttonSelector="#confirmPay"
+        selectors={{
+          start: "#startDate",
+          end: "#endDate",
+          qty: "#qty",
+          location: "#accessSelect",
+        }}
+        market="30a"
+        resolveRoute={({ market, locationValue }) => ({
+          partnerId: "coastal-public",
+          propertyId: (locationValue || "camellia").trim(),
+        })}
       />
-    </ItineraryProvider>
+    </main>
   );
 }
